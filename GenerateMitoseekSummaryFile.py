@@ -9,22 +9,25 @@ Created on Wed Feb 10 15:28:27 2016
 # place this script in the folder containing the mitoseek subdirectories
 
 # usage python3 GenerateMitoseekSummaryFile.py options
-# [tumor/normal]: consider normal or tumor sample
+# [normal/tumor]: tissue type
 # [WGS/RNA]: use RNAseq or WGS mitoseek outputs
+# BlacklistFile: file with blacklisted individuals
+# MinimumReadDepth: keep individuals with median read depth > MinimumReadDepth
+# PositionReadDepth: keep positions with read depth > PositionReadDepth
 # outputfile
 
 import os
 import sys
+import numpy as np
 from somatic_mutations import *
 
 tissue = sys.argv[1]
 dataset = sys.argv[2]
-outputfile = sys.argv[3]
+BlacklistFile = sys.argv[3]
+MinimumReadDepth = sys.argv[4]
+PositionReadDepth = sys.argv[5]
+outputfile = sys.argv[6]
 
-# get the sample size for each position {position: N}
-# this function already ignores duplicate individuals
-sample_size = SampleSize('./', tissue, dataset)
-print(len(sample_size))
 
 # check data sets, filter out individuals mapped to ref different than GRCH37 if WGS
 if dataset == 'WGS':
@@ -43,6 +46,27 @@ elif dataset == 'RNA':
         folders.remove(i)
 print(len(folders))        
 
+
+# create a dict {participant: median read depth}
+ReadDepth = MedianReadDepthIndividual(folders)
+
+# get the set of blaclisted individuals
+blacklisted = BlackListed(BlacklistFile)
+
+# get the sample size for each position {position: set(individuals)}
+# this function already ignores duplicate individuals
+# and counts individuals with minimum read depth at given position
+sample_size = SampleSize('./', tissue, dataset, PositionReadDepth)
+print(len(sample_size))
+# remove blaclisted individuals and individuals with too low read depth
+for position in sample_size:
+    to_delete = set()
+    for participant in sample_size[position]:
+        if participant in blacklisted or ReadDepth[participant] <= MinimumReadDepth:
+            to_delete.add(participant)
+    for participant in to_delete:
+        sample_size[position].remove(participant)
+
 # get the gene annotations
 MT_annotation =  MitoAnnotation('rCRS_genes_MT.text.txt')
 print(len(MT_annotation))
@@ -57,10 +81,16 @@ for subfolder in folders:
     variants = GetIndividualTumorHeteroplasmies(subfolder + '/mito1_heteroplasmy.txt', sample_size, MT_annotation)
     # update MitoVariants with variant info
     for position in variants:
-        if position in MitoVariants:
-            MitoVariants[position].append(variants[position])
-        else:
-            MitoVariants[position] = [variants[position]]
+        # compute the read coverage for the given position
+        reads = sum(list(map(lambda x: int(x), variants[position][12:20])))
+        assert type(reads) == int, 'sum of read counts should be an integer'
+        # do not consider blacklisted participant IDs and participants with median read depth <= minimum
+        # do not consider positions with read depth <= minimum
+        if variants[positions][0] not in blacklisted and ReadDepth[variants[positions][0]] > MinimumReadDepth and reads > PositionReadDepth:
+            if position in MitoVariants:
+                MitoVariants[position].append(variants[position])
+            else:
+                MitoVariants[position] = [variants[position]]
 
 # open file for writing
 newfile = open(outputfile, 'w')
