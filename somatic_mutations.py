@@ -87,10 +87,10 @@ def GetValidReference(folder):
     
     
 # use this function to determine the sample size of each position
-def SampleSize(folder, tissue_type, dataset):
+def SampleSize(folder, tissue_type, dataset, minimum_coverage):
     '''
-    (str, str) -> dict
-    Return a dict with the number of individuals with coverage at each position
+    (str, str, str) -> dict
+    Return a dict with the individuals with > minumum coverage at each position
     of the mitochondrial genome for the tumor or normal tissue type and for
     WGS or for RNA
     '''
@@ -111,11 +111,13 @@ def SampleSize(folder, tissue_type, dataset):
         for i in to_delete:
             directories.remove(i)    
     
-    # create a dict with position 0-based {position: number of indidivuals}    
+    # create a dict with position 0-based {position: set(indidivuals)}    
     sample = {}
     
     # loop over directories
     for i in directories:
+        # get participant ID
+        participant = i[:i.index('_')]
         # check if mitoseek was run on paired samples or on individual samples
         if 'mito2_basecall.txt' in os.listdir(i):
             # check if tissue type is normal or tumor
@@ -138,8 +140,15 @@ def SampleSize(folder, tissue_type, dataset):
             if line != '':
                 line = line.split('\t')
                 position = int(line[1]) - 1
-                # update dict with count
-                sample[position] = sample.get(position, 0) + 1
+                # get read depth
+                coverage = sum(list(map(lambda x: int(x), line[3:])))
+                # do not consider positions with coverage <= minimum
+                if coverage > minimum_coverage:
+                    # initialize set if key not in dict
+                    if position not in sample:
+                        sample[position] = set()
+                    # populate dict
+                    sample[position].add(participant)
         # close file after reading
         infile.close()
         
@@ -249,7 +258,7 @@ def GetIndividualTumorHeteroplasmies(heteroplasmy_file, sample_size, mito_annota
             # get major and minor allele counts
             major_count, minor_count = line[16], line[17]
             # get sample size
-            N = str(sample_size[int(position)])
+            N = str(len(sample_size[position]))
             # get read counts for each nucleotide
             forward_A, forward_T, forward_C, forward_G = line[3], line[4], line[5], line[6]
             reverse_A, reverse_T, reverse_C, reverse_G = line[7], line[8], line[9], line[10]            
@@ -532,31 +541,56 @@ def GetReadDepth(BaseCallFile):
     infile.close()
     return ReadDepth        
 
-# use this function to compute the correlation between median read depth and 
-# number of heteroplasmies in the population sample    
-def CorrelationHeteroplasmyReadDepth(folder):
+
+
+# use this function to compute the median read depth per individual
+def MedianReadDepthIndividual(folders):
     '''
-    (str) -> (list, list)
+    (str) -> dict
+    Loop over the Mitoseek output folders and compute the median read depth 
+    over all positions for each individual
+    Precondition: Folders have been filtered to keep only non-redundant 
+    individual mapped with GRCH37
+    '''
+
+    # create a dict {participant: median read depth}
+    ReadDepth = {}
+    # loop over subfolders
+    for i in folders:
+        # get the participant ID
+        participant = i[:i.index('_')]
+        # get the position-read depth for that participant
+        reads = GetReadDepth(i + '/mito1_basecall.txt')
+        # get the read counts
+        ReadCounts = [reads[j] for j in reads]
+        # median read counts
+        median_reads = np.median(ReadCounts)
+        # populate dict
+        ReadDepth[participant] = median_reads    
+    return ReadDepth
+
+
+# use this function to generate a set of blacklisted individuals to ignore in all analyses
+def BlackListed(blacklisted_individual_file):
+    '''
+    (file) -> set
+    Take the file with individuals blacklisted in the PCAWG release and
+    return a set of individual IDs to ignore in all analyses
+    '''
+    
+    # create a set of individual IDs
+    blacklisted = set()    
+    # open file for reading
+    infile = open(blacklisted_individual_file)
+    # loop over file
+    for line in infile:
+        # skip comment lines
+        if not line.startswith('#'):
+            line = line.rstrip()
+            if line != '':
+                # add ID to set
+                blacklisted.add(line)
+    infile.close()
+    return blacklisted
     
     
-    '''
-    pass
-  
-
-
-
-
-
-
-
-
-
-
-  
-# use this function to compare the average read depth between variable
-# and non-variable positions    
-
-
-
-
-
