@@ -18,6 +18,10 @@ from somatic_mutations import *
 # - RNA_folder: folder with RNA mitoseek outputs
 # - WGS_folder: folder with WGS mitoseek outputs
 # - suffix: suffix of the participant ID in the subfolder name
+# - [soft/hard]: filter to compare variable positions in RNA and DNA.
+#                Remove all variable positions in DNA (hard)
+#                Or remove variable positions in DNA if alleles are the same in RNA and DNA
+#                
 # - outputfile
 
 
@@ -31,8 +35,10 @@ RNA_folder = sys.argv[3]
 WGS_folder = sys.argv[4]
 # get the suffix
 suffix = sys.argv[5]
+# get the strength of the RNA filter
+RNAFilter = sys.argv[6]
 # get the outputfile name
-outputfile = sys.argv[6]
+outputfile = sys.argv[7]
 
 
 # parse the summary files into a dict of dict {participantID: {position : [information]} 
@@ -57,7 +63,6 @@ print('RNA_snps after removing positions without coverage', len(RNA_snps))
 # move to the directory containing the subfolders of the mitoseek RNA outputs
 os.chdir(RNA_folder)
 print(os.getcwd())
-
 
 
 # correct sample size at each position
@@ -110,11 +115,16 @@ for participant in RNA_snps:
     for position in RNA_snps[participant]:
         # check if position is recorded in WGS
         if position in WGS_snps[participant]:
-            # remove positions for which variants are the same in RNA and DNA
-            # keep variable positions in DNA if alleles are different in RNA and DNA
-            rna_alleles = set(list(map(lambda x: x.upper(), RNA_snps[participant][position][7:9])))
-            dna_alleles = set(list(map(lambda x: x.upper(), WGS_snps[participant][position][7:9])))
-            if rna_alleles == dna_alleles:
+            # check filter strength
+            if RNAFilter == 'soft':
+                # remove positions for which variants are the same in RNA and DNA
+                # keep variable positions in DNA if alleles are different in RNA and DNA
+                rna_alleles = set(list(map(lambda x: x.upper(), RNA_snps[participant][position][7:9])))
+                dna_alleles = set(list(map(lambda x: x.upper(), WGS_snps[participant][position][7:9])))
+                if rna_alleles == dna_alleles:
+                    to_delete.append(position)
+            elif RNAFilter == 'hard':
+                # remove position
                 to_delete.append(position)
     if len(to_delete) != 0:
         for position in to_delete:
@@ -128,9 +138,6 @@ for i in RNA_snps:
 for i in to_delete:
     del RNA_snps[i]
 print('RNA_snps after filtering variants in DNA', len(RNA_snps))
-
-
-
 
 
 # create a dict with position as key and list of lists with info for all participants
