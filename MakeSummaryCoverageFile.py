@@ -19,7 +19,7 @@ Created on Tue Mar  8 18:12:58 2016
 import os
 import sys
 import numpy as np
-from somatic_mutations import *
+from mito_mutations import *
 
 # get cancer name
 cancer_name = sys.argv[1]

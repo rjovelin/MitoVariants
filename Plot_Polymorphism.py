@@ -7,7 +7,7 @@ Created on Tue Feb 23 15:18:49 2016
 
 import matplotlib.pyplot as plt
 import sys
-from somatic_mutations import *
+from mito_mutations import *
 
 
 # create a figure with polymorphism content at each positions of mitochondria

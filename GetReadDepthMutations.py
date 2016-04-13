@@ -10,7 +10,7 @@ Created on Fri Mar 11 10:49:31 2016
 import os
 import sys
 import json
-from somatic_mutations import *
+from mito_mutations import *
 
 # place this script in the folder with mitoseek subfolders output
 
