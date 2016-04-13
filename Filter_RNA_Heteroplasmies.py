@@ -10,7 +10,7 @@ Created on Tue Mar  1 13:52:57 2016
 
 import os
 import sys
-from somatic_mutations import *
+from mito_mutations import *
 
 # usage python Filter_RNA_Heteroplasmies.py options
 # - RNA_summary_file: summary file with heteroplasmies in RNAs

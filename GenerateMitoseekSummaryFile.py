@@ -19,7 +19,7 @@ Created on Wed Feb 10 15:28:27 2016
 import os
 import sys
 import numpy as np
-from somatic_mutations import *
+from mito_mutations import *
 
 tissue = sys.argv[1]
 dataset = sys.argv[2]
