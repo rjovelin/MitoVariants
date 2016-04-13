@@ -21,7 +21,7 @@ from somatic_mutations import *
 # - [soft/hard]: filter to compare variable positions in RNA and DNA.
 #                Remove all variable positions in DNA (hard)
 #                Or remove variable positions in DNA if alleles are the same in RNA and DNA
-#                
+# - minimum_coverage: minimum read depth to keep positions               
 # - outputfile
 
 
@@ -37,8 +37,10 @@ WGS_folder = sys.argv[4]
 suffix = sys.argv[5]
 # get the strength of the RNA filter
 RNAFilter = sys.argv[6]
+# get the minimum read depth
+minimum_coverage = int(sys.argv[7])
 # get the outputfile name
-outputfile = sys.argv[7]
+outputfile = sys.argv[8]
 
 
 # parse the summary files into a dict of dict {participantID: {position : [information]} 
@@ -57,7 +59,7 @@ os.chdir(WGS_folder)
 print(os.getcwd())
 
 # remove positions with RNA variants that have no coverage in DNA
-RNA_snps = RemovePositionWithoutCoverage(RNA_snps, suffix)
+RNA_snps = RemovePositionWithoutCoverage(RNA_snps, suffix, minimum_coverage)
 print('RNA_snps after removing positions without coverage', len(RNA_snps))
 
 # move to the directory containing the subfolders of the mitoseek RNA outputs
@@ -66,7 +68,7 @@ print(os.getcwd())
 
 
 # correct sample size at each position
-# get the sample size of individuals with RNAseq and WGS that have coverage in RNA at each position
+# get the sample size of individuals with RNAseq and WGS that have minimum coverage in RNA at each position
 # make a list of subfolders from RNA mitoseek outputs
 RNASubFolders = [i for i in os.listdir(RNA_folder)]
 to_delete = []
@@ -95,8 +97,13 @@ for subfolder in RNASubFolders:
             line = line.split('\t')
             # get position 0-based
             position = int(line[1]) - 1
-            # update dict with count
-            sample[position] = sample.get(position, 0) + 1
+            # compute coverage
+            reads = sum(list(map(lambda x: int(x), line[3:])))
+            assert type(reads) == int, "reads should be an integer"
+            # do not consider positions with read depth < minimum
+            if reads > minimum_coverage:
+                # update dict with count
+                sample[position] = sample.get(position, 0) + 1
     infile.close()
 # loop over participant
 for ID in RNA_snps:

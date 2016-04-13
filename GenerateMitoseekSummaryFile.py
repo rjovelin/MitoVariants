@@ -24,8 +24,8 @@ from somatic_mutations import *
 tissue = sys.argv[1]
 dataset = sys.argv[2]
 BlacklistFile = sys.argv[3]
-MinimumReadDepth = sys.argv[4]
-PositionReadDepth = sys.argv[5]
+MinimumReadDepth = int(sys.argv[4])
+PositionReadDepth = int(sys.argv[5])
 outputfile = sys.argv[6]
 
 
