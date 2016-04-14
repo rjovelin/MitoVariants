@@ -601,3 +601,65 @@ def BlackListed(blacklisted_individual_file):
     return blacklisted
     
     
+###########################
+###########################
+###########################
+###########################    
+    
+# count number of multiallelic snps
+
+
+# get the positions of the multiallellic snps
+
+
+# use this function to identify multiallelic snps
+def IdentifyMultiAllelicPositions(HeteroplasmyFile, threshold):
+    '''
+    (file, num) -> dict
+    Return a dictionary with individual ID as key and an inner dictionary
+    of position: list of alleles with read numbers > threshold as value
+    '''
+    
+    # create a dict of dict {individual : {position : [allele1, allele2, allele3, allele4]}}
+    MultiAlleles = {}
+    
+    # open file, extract multi allelic positions
+    infile = open(HeteroplasmyFile, 'r')
+    infile.readline()
+    for line in infile:
+        line = line.rstrip()
+        if line != '':
+            line = line.split('\t')
+            # get position 0-based
+            position = int(line[0]) -1
+            # get individual ID
+            individual = line[1]
+            # get nucleotide reads
+            reads = {'A': int(line[12]) + int(line[16]),
+                     'T': int(line[13]) + int(line[17]),
+                     'C': int(line[14]) + int(line[18]),
+                     'G': int(line[15]) + int(line[19])}
+            # get total reads
+            total_reads = 0
+            for base in reads:
+                total_reads += reads[base]
+            # compare reads to threshold
+            for base in reads:
+                # keep allele if number of reads > threshold
+                if (reads[base] / total_reads) * 100 > threshold:
+                    # check if individual is already recorded
+                    if individual not in MultiAlleles:
+                        # inititialze inner dict
+                        MultiAlleles[individual] = {}
+                    # check if position is already
+                    if position in MultiAlleles[individual]:
+                        MultiAlleles[individual][position].append(base)
+                    else:
+                        MultiAlleles[individual][position] = [base]
+    infile.close()
+    return MultiAlleles
+                        
+            
+             
+           
+    
