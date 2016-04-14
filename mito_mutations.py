@@ -601,17 +601,6 @@ def BlackListed(blacklisted_individual_file):
     return blacklisted
     
     
-###########################
-###########################
-###########################
-###########################    
-    
-# count number of multiallelic snps
-
-
-# get the positions of the multiallellic snps
-
-
 # use this function to identify multiallelic snps
 def IdentifyMultiAllelicPositions(HeteroplasmyFile, threshold):
     '''
