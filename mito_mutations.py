@@ -308,15 +308,13 @@ def MitoAnnotation(MitoGeneFile):
             # get gene name
             gene = line[3]
             gene_coord[gene] = set()
+            # start and end positions are inclusive
             for i in range(start, end):
                 gene_coord[gene].add(i)
     # close file
     infile.close()
     
     return gene_coord
-
-
-
 
 
 # use this function to convert the heterosummaryfile into a dict of dicts
@@ -649,6 +647,17 @@ def IdentifyMultiAllelicPositions(HeteroplasmyFile, threshold):
     return MultiAlleles
                         
             
-             
-           
+# use this function to convert SNP indices on genome to indices on genes
+def GenomicPositionToGenePosition(snp_start, gene_start, gene_end, orientation):
+    '''
+    (int, int, int, str) -> int
+    Return the position of a SNP in a gene given its position on chromosome
+    Precondition: all coordinates are 0-index based    
+    '''
+    
+    if orientation == '+':
+        start = snp_start - gene_start
+    elif orientation == '-':
+        start = (gene_end - 1) - snp_start
+    return start
     
