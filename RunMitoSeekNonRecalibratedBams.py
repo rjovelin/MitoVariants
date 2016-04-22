@@ -11,7 +11,7 @@ import sys
 print('done importing modules')
 
 # use this script to prepare bash files and launch mitoseek on thse files
-# Preconditin, place this script in /RQusagers/rjovelin/awadalla_group/TCGA/Mitoseek/mitoseek_hp1_mbq13 
+# Preconditin, place this script in /RQusagers/rjovelin/awadalla_group/TCGA/Mitoseek/ + (DestinationFolder) 
 # use this script for unpaired bams and non-recalibrate WGS bams
 
 
@@ -22,6 +22,17 @@ print('done importing modules')
 IDFile = sys.argv[1]
 print(IDFile)
 
+# get the phred score from command
+Phred = int(sys.argv[2])
+
+print(IDFile)
+print(Phred)
+
+
+if Phred == 13:
+    DestinationFolder = 'mitoseek_hp1_mbq13/'
+elif Phred == 20:
+    DestinationFolder = 'mitoseek_hp1_mbq20/'
 
 # assign t = 4 by default, unless data is RNASeq
 t = 4
@@ -47,15 +58,15 @@ for line in infile:
         myfile = line[2] + '.woPCRDUP.PP.UM.bam'
         
         # open file for writing command
-        filepath = '/exec5/GROUP/awadalla/awadalla/awadalla_group/TCGA/Mitoseek/mitoseek_hp1_mbq13/'
+        filepath = '/exec5/GROUP/awadalla/awadalla/awadalla_group/TCGA/Mitoseek/' + DestinationFolder
                 
         outputfile = './' + participant + '_' + datatype + '_' + genome + '.sh' 
         newfile = open(outputfile, 'w')
         newfile.write('cd /RQusagers/rjovelin/awadalla_group/Programs/MitoSeek-1.3/' + '\n')
         newfile.write('module load bioperl/1.6.1\n')
         newfile.write('module load perl_extra\n')
-        newfile.write('perl mitoSeek_debug.pl -i  /exec5/GROUP/awadalla/awadalla/awadalla_group/TCGA/Mitoseek/mitoseek_hp1_mbq13/' +
-        myfile + ' -t ' + str(t) + ' -sb 0 -sp 1 -mbq 13 -hp 1 -ha 2 -r rCRS -R rCRS -o /exec5/GROUP/awadalla/awadalla/awadalla_group/TCGA/Mitoseek/mitoseek_hp1_mbq13/' +
+        newfile.write('perl mitoSeek_debug.pl -i  /exec5/GROUP/awadalla/awadalla/awadalla_group/TCGA/Mitoseek/' + DestinationFolder +
+        myfile + ' -t ' + str(t) + ' -sb 0 -sp 1 -mbq ' + str(Phred) + ' -hp 1 -ha 2 -r rCRS -R rCRS -o /exec5/GROUP/awadalla/awadalla/awadalla_group/TCGA/Mitoseek/' + DestinationFolder +
         participant + '_' + datatype + '_' + genome + ' -samtools /home/apps/Logiciels/samtools/0.1.19/bin/samtools' + '\n')
         newfile.close()            
         MyCommand = 'qsub -l walltime=2:00:00,nodes=1:ppn=4 ' + filepath + participant + '_' + datatype + '_' + genome + '.sh'
