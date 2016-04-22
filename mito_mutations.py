@@ -631,7 +631,7 @@ def IdentifyMultiAllelicPositions(HeteroplasmyFile, threshold):
                 if reads[base] == max([i for i in reads.values()]):
                     MaxBase = base
             # check that Maxbase is major allele
-            assert line[14].upper() == MaxBase.upper(). 'allele with highest reads is not the major allele'
+            assert line[14].upper() == MaxBase.upper(), 'allele with highest reads is not the major allele'
             # get total reads
             total_reads = 0
             for base in reads:
