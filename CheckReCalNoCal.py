@@ -41,7 +41,7 @@ for filename in bams:
     newfile.write('module load perl_extra\n')
     newfile.write('perl mitoSeek_debug.pl -i  /exec5/GROUP/awadalla/awadalla/awadalla_group/TCGA/Mitoseek/norecalVSrecal/' + filename + 
     ' -t 4 -sb 0 -sp 1 -mbq 20 -hp 1 -ha 2 -r rCRS -R rCRS -o /exec5/GROUP/awadalla/awadalla/awadalla_group/TCGA/Mitoseek/norecalVSrecal/' +
-    participant + '_TP_GRCH37 -samtools /home/apps/Logiciels/samtools/0.1.19/bin/samtools' + '\n')
+    participant + '_' + calibration + '_TP_GRCH37 -samtools /home/apps/Logiciels/samtools/0.1.19/bin/samtools' + '\n')
     newfile.close()            
     MyCommand = 'qsub -l walltime=2:00:00,nodes=1:ppn=4 ' + filepath + participant + '_' + calibration + '_TP_GRCH37' + '.sh'
     os.system(MyCommand)
