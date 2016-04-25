@@ -77,12 +77,13 @@ if len(to_delete) != 0:
     
 print('\n')
 
-print('participant', 'recal', 'N', 'nocal', 'N', 'N_recal >= N_nocal', 'N_common', sep = '\t')
+print('participant', 'recal', 'N', 'nocal', 'N', 'N_recal >= N_nocal', 'N_common', 'N_differents', sep = '\t')
 # compare snps in same individuals
 for i in recal:
     recal_snps = set(j for j in recal[i])
     nocal_snps = set(j for j in nocal[i])
-    print(i, 'recal', len(recal[i]), 'nocal', len(nocal[i]), len(recal[i]) >= len(nocal[i]), len(recal_snps.intersection(nocal_snps)), sep = '\t')
+    print(i, 'recal', len(recal[i]), 'nocal', len(nocal[i]), len(recal[i]) >= len(nocal[i]), \
+    len(recal_snps.intersection(nocal_snps)), len(list(recal_snps.difference(nocal_snps)) + list(nocal_snps.difference(recal_snps))), sep = '\t')
 
 print('\n')
 print('======\n' * 2)
