@@ -308,7 +308,7 @@ def MitoAnnotation(MitoGeneFile):
             # get gene name
             gene = line[3]
             gene_coord[gene] = set()
-            # start and end positions are inclusive
+            # all indices in the set are positions in gene
             for i in range(start, end):
                 gene_coord[gene].add(i)
     # close file
@@ -511,9 +511,6 @@ def StrandBias(HeteroSummaryFile):
     return MutationBias
                 
 
-# use this function to compute the average read
-            
-
 
 # use this function to compute the median read depth for a single individual
 def GetReadDepth(BaseCallFile):
@@ -666,5 +663,59 @@ def GenomicPositionToGenePosition(snp_start, gene_start, gene_end, orientation):
     elif orientation == '-':
         start = (gene_end - 1) - snp_start
     return start
+
+
+# use this function to find the most 5' nonsense mutation
+def FindFistStopCodon(HeteroSummaryFile, mito_annotation):
+    '''
+    (file, dict) -> dict
+    Take the Summary file with heteroplasmies detected by MitoSeek and a dictionary
+    with indices for each gene and return a dictionary with protein-coding gene
+    name as key and the 5' most upstream position of a nonsense allele in that gene
+    '''
+    
+    # create dict {gene: 5' position}
+    stops = {}
+
+    # open file for reading, skip header
+    infile = open(HeteroSummaryFile)
+    infile.readline()
+    # loop over file
+    for line in infile:
+        line = line.rstrip()
+        if line != '':
+            line = line.split('\t')
+            # check if stop codon gain
+            if line[4] == 'stopgain':
+                # gene gene name and SNP position, 0-based
+                gene = line[2]
+                position = int(line[0]) -1
+                # check if gene in dict
+                if gene in stops:
+                    # check if position is most upstream (lower for + and higher for -)
+                    if ('(+)' in line[3] and position < stops[gene][0]) or ('(-)' in line[3] and position > stops[gene][0]):
+                        # found a most upstream stop codon, update with position
+                        stops[gene][0] = position
+                else:
+                    # populate dict with position and orientation + or -
+                    stops[gene] = [position, line[3][line[3].index('(')+1:-1]]
+    infile.close()
+    return stops
+    # convert annotation set of indices to coordinates [start, end]
+    for gene in mito_annotation:
+        mito_annotation[gene] = list(mito_annotation[gene])
+        mito_annotation[gene].sort()
+        start, end = mito_annotation[gene][0], mito_annotation[gene][-1] + 1
+        mito_annotation[gene] = [start, end]
+
+    # get the positions relative to gene start in 5' orientation    
+    truc = {}    
+    for gene in stops:
+        start = GenomicPositionToGenePosition(stops[gene][0], mito_annotation[gene][0], mito_annotation[gene][-1], stops[gene][-1])
+        # drop orientation, keep only position
+        truc[gene] = start
+
+    return stops, truc
+
 
 
