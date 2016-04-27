@@ -316,6 +316,38 @@ def MitoAnnotation(MitoGeneFile):
     
     return gene_coord
 
+# use this function to get the start and end position of the mitocondrial genes
+def MitoGeneCoordinates(MitoGeneFile):
+    '''
+    (file) -> dict
+    Take a file with rCRS annotation of the mitochondrial genome and return a 
+    dict with gene as key and list of gene coordinates as value in in 0-based    
+    '''
+    
+    # Get the position indices of the mito genes
+    annotation = MitoAnnotation(MitoGeneFile)
+
+    # create a dict with strand orientation
+    strand = {'ATP6': '+', 'ATP8': '+', 'COX1': '+', 'COX2': '+', 'COX3': '+',
+              'CYTB': '+', 'ND1': '+', 'ND2': '+', 'ND3': '+', 'ND4': '+',
+              'ND4L': '+', 'ND5': '+', 'ND6': '-', 'RNR1': '+', 'RNR2': '+',
+              'TRNA': '-', 'TRNC': '-', 'TRND': '+', 'TRNE': '-', 'TRNF': '+',
+              'TRNG': '+', 'TRNH': '+', 'TRNI': '+', 'TRNK': '+', 'TRNL1': '+',
+              'TRNL2': '+', 'TRNM': '+', 'TRNN': '-', 'TRNP': '-', 'TRNQ': '-',
+              'TRNR': '+', 'TRNS1': '-', 'TRNS2': '+', 'TRNT': '+', 'TRNV': '+',
+              'TRNW': '+', 'TRNY': '-'}
+
+    # create a new dict so that mito_annotation is not modified  [start, end, orientation]
+    coordinates = {}
+    for gene in annotation:
+        coordinates[gene] = list(annotation[gene])
+        coordinates[gene].sort()
+        start, end = coordinates[gene][0], coordinates[gene][-1] + 1
+        coordinates[gene] = [start, end]
+        coordinates[gene].append(strand[gene])
+    
+    return coordinates
+
 
 # use this function to convert the heterosummaryfile into a dict of dicts
 def GetVariablePositions(HeteroSummaryFile):
@@ -666,13 +698,16 @@ def GenomicPositionToGenePosition(snp_start, gene_start, gene_end, orientation):
 
 
 # use this function to find the most 5' nonsense mutation
-def FindFistStopCodon(HeteroSummaryFile, mito_annotation):
+def FindFistStopCodon(HeteroSummaryFile, MitoGeneFile):
     '''
-    (file, dict) -> dict
-    Take the Summary file with heteroplasmies detected by MitoSeek and a dictionary
-    with indices for each gene and return a dictionary with protein-coding gene
+    (file, file) -> dict
+    Take the Summary file with heteroplasmies detected by MitoSeek and the file with
+    mictochondrial coordinates and return a dictionary with protein-coding gene
     name as key and the 5' most upstream position of a nonsense allele in that gene
     '''
+    
+    # get the gene coordinates {gene: [start, end, orientation]}
+    coords = MitoGeneCoordinates(MitoGeneFile)
     
     # create dict {gene: 5' position}
     stops = {}
@@ -693,28 +728,139 @@ def FindFistStopCodon(HeteroSummaryFile, mito_annotation):
                 # check if gene in dict
                 if gene in stops:
                     # check if position is most upstream (lower for + and higher for -)
-                    if ('(+)' in line[3] and position < stops[gene][0]) or ('(-)' in line[3] and position > stops[gene][0]):
-                        # found a most upstream stop codon, update with position
-                        stops[gene][0] = position
+                    if coords[gene][-1] == '+':
+                        assert '(+)' in line[3], 'gene should be on + strand'
+                        if position < stops[gene]:
+                            stops[gene] = position
+                    elif coords[gene][-1] == '-':
+                        assert '(-)' in line[3], 'gene should be on - strand'
+                        if position > stops[gene]:
+                            stops[gene] = position
                 else:
-                    # populate dict with position and orientation + or -
-                    stops[gene] = [position, line[3][line[3].index('(')+1:-1]]
+                    stops[gene] = position
     infile.close()
     
-    # convert annotation set of indices to coordinates [start, end]
-    for gene in mito_annotation:
-        mito_annotation[gene] = list(mito_annotation[gene])
-        mito_annotation[gene].sort()
-        start, end = mito_annotation[gene][0], mito_annotation[gene][-1] + 1
-        mito_annotation[gene] = [start, end]
-
     # get the positions relative to gene start in 5' orientation    
     for gene in stops:
-        start = GenomicPositionToGenePosition(stops[gene][0], mito_annotation[gene][0], mito_annotation[gene][-1], stops[gene][-1])
+        start = GenomicPositionToGenePosition(stops[gene], coords[gene][0], coords[gene][1], coords[gene][-1])
         # drop orientation, keep only position
         stops[gene] = start
 
     return stops
 
 
+################### edit below
+
+
+
+
+
+def is_PTC_positions_uniform(PTC_file, window):
+    '''
+    (file, int) -> None
+    Performs a chi-square test of uniform distribution of the most 5' PTC along the CDS
+    '''
+
+    from scipy import stats
+    range_counts = PTC_positions_along_CDS(PTC_file, window)
+        
+    # performs chi square test
+    # note that the degree of freedom = k -1 - ddof
+    # with k = number of observed frequencies
+    # need to specify the parameter ddof to get the appropriate degree of freedom
+
+    chisquare_test = stats.chisquare(range_counts)
+    print('chisquare: %6.4f' % chisquare_test[0])
+    print('p_value: {0}'.format(chisquare_test[1]))
+
+
+def histogram_PTC_positions(PTC_file, window):
+    '''
+    (file, int) -> list
+    Return a list of porportions of the 5' most PTC along the CDS in bins of size window
+    to be use to make a histogram plot
+    '''
+    # count the number of PTC in each bin, taling into consideration only the most 5' PTC
+    range_counts = PTC_positions_along_CDS(PTC_file, window)
+
+    # count the number of such PTC
+    stops = open(PTC_file, 'r')
+    header = stops.readline()
+    genes = set()
+    for line in stops:
+        line = line.rstrip()
+        if line != '':
+            line  = line.split()
+            gene = line[0]
+            genes.add(gene)
+    total = len(genes)
+
+    # calculate proportions:
+    for i in range(len(range_counts)):
+        range_counts[i] = range_counts[i] / total
+
+    stops.close()
+    return range_counts
+
+
+
+def partition_CDS_length(PTC_file):
+    '''
+    (file) -> list
+    Sort the genes in PTC_file according to their length
+    and return a list of dictionnaries for each length quartile
+    and the header of the file as last item
+    '''
+
+    # stote the PTC info in dictionnary
+    stops = open(PTC_file, 'r')
+    PTC = {}
+    header = stops.readline()
+    for line in stops:
+        line = line.rstrip()
+        if line != '':
+            line = line.split()
+            PTC[line[0]] = line
+
+    # compute the length quartiles
+    CDS_length = []
+    for gene in PTC:
+        CDS_length.append(int(PTC[gene][3]))
+
+    quartiles = compute_quartiles(CDS_length)
+
+    # sort genes into dictionnary of length quartile
+    Q1, Q2, Q3, Q4 = {}, {}, {}, {}
+    for gene in PTC:
+        size = int(PTC[gene][3])
+        if size < quartiles[0]:
+            Q1[gene] = PTC[gene]
+        elif size >= quartiles[0] and size < quartiles[1]:
+            Q2[gene] = PTC[gene]
+        elif size >= quartiles[1] and size < quartiles[2]:
+            Q3[gene] = PTC[gene]
+        else:
+            Q4[gene] = PTC[gene]
+
+    stops.close()
+    return [Q1, Q2, Q3, Q4, header]
+
+
+def save_quartiles_to_file(PTC_file):
+    '''
+    Sort the genes according to their CDS length, store them in dictionnaries
+    of quartile length and save each dictionnary to a separate file
+    '''
+
+    quartiles = partition_CDS_length(PTC_file)
+    header = quartiles[-1]
+
+    for i in range(len(quartiles)-1):
+        Q_file = open('PTC_polym_SNPS_only_Q' + str(i+1) +'.txt', 'w')
+        Q_file.write(header)
+        for gene in quartiles[i]:
+            for item in quartiles[i][gene][:-1]:
+                Q_file.write(item + '\t')
+            Q_file.write(quartiles[i][gene][-1] + '\n')
+        Q_file.close()
 
