@@ -697,19 +697,20 @@ def GenomicPositionToGenePosition(snp_start, gene_start, gene_end, orientation):
     return start
 
 
-# use this function to find the most 5' nonsense mutation
-def FindFistStopCodon(HeteroSummaryFile, MitoGeneFile):
+# use this function to record the positions of variable sites or mutations creating stop codons 
+def StopCodonPositions(HeteroSummaryFile, MitoGeneFile, Sites = 'mutations', FirstOnly = False):
     '''
-    (file, file) -> dict
+    (file, file, int, bool) -> dict
     Take the Summary file with heteroplasmies detected by MitoSeek and the file with
     mictochondrial coordinates and return a dictionary with protein-coding gene
-    name as key and the 5' most upstream position of a nonsense allele in that gene
+    name as key and a list of positions for all stop codon mutations (by default)
+    or a set of positions with variable sites for all alleles or for the most 5' allele
     '''
     
     # get the gene coordinates {gene: [start, end, orientation]}
     coords = MitoGeneCoordinates(MitoGeneFile)
     
-    # create dict {gene: 5' position}
+    # create dict {gene: [positions]}
     stops = {}
 
     # open file for reading, skip header
@@ -727,140 +728,63 @@ def FindFistStopCodon(HeteroSummaryFile, MitoGeneFile):
                 position = int(line[0]) -1
                 # check if gene in dict
                 if gene in stops:
-                    # check if position is most upstream (lower for + and higher for -)
-                    if coords[gene][-1] == '+':
-                        assert '(+)' in line[3], 'gene should be on + strand'
-                        if position < stops[gene]:
-                            stops[gene] = position
-                    elif coords[gene][-1] == '-':
-                        assert '(-)' in line[3], 'gene should be on - strand'
-                        if position > stops[gene]:
-                            stops[gene] = position
+                    # check if only the 5' most upstream is considered
+                    if FirstOnly == True:
+                        # check if position is most upstream (lower for + and higher for -)
+                        if coords[gene][-1] == '+':
+                            assert '(+)' in line[3], 'gene should be on + strand'
+                            if position <= stops[gene][0]:
+                                stops[gene].append(position)
+                        elif coords[gene][-1] == '-':
+                            assert '(-)' in line[3], 'gene should be on - strand'
+                            if position >= stops[gene][0]:
+                                stops[gene].append(position)
+                    elif FirstOnly == False:
+                        # consider all alleles
+                        stops[gene].append(position)
                 else:
-                    stops[gene] = position
+                    stops[gene] = [position]
     infile.close()
     
     # get the positions relative to gene start in 5' orientation    
     for gene in stops:
-        start = GenomicPositionToGenePosition(stops[gene], coords[gene][0], coords[gene][1], coords[gene][-1])
-        # drop orientation, keep only position
-        stops[gene] = start
+        for i in range(len(stops[gene])):
+            stops[gene][i] = GenomicPositionToGenePosition(stops[gene][i], coords[gene][0], coords[gene][1], coords[gene][-1])
+    
+    # check if mutations or sites are considered
+    if Sites == 'mutations':
+        # keep track of the positions of all mutations
+        return stops
+    elif Sites == 'sites':
+        # keep track of the positions of the variable sites
+        for gene in stops:
+            stops[gene] = set(stops[gene])
+            stops[gene] = list(stops[gene])
+        return stops
 
-    return stops
 
-
-################### edit below
-
-
-
-
-
-def is_PTC_positions_uniform(PTC_file, window):
+# use this function to get the relative positions of stop codon alelles along the CDS in %
+def StopCodonAlongCDS(HeteroSummaryFile, MitoGeneFile, Sites = 'mutations', FirstOnly = False):
     '''
-    (file, int) -> None
-    Performs a chi-square test of uniform distribution of the most 5' PTC along the CDS
+    (file, file, int, bool) -> dict
+    Take the Summary file with heteroplasmies detected by MitoSeek and the file with
+    mictochondrial coordinates, and return a list with relative positions 
+    of stop codon mutations or sites along the CDS for the 5' most upstream
+    stop codon mutation or for all stop codon mutations
     '''
-
-    from scipy import stats
-    range_counts = PTC_positions_along_CDS(PTC_file, window)
-        
-    # performs chi square test
-    # note that the degree of freedom = k -1 - ddof
-    # with k = number of observed frequencies
-    # need to specify the parameter ddof to get the appropriate degree of freedom
-
-    chisquare_test = stats.chisquare(range_counts)
-    print('chisquare: %6.4f' % chisquare_test[0])
-    print('p_value: {0}'.format(chisquare_test[1]))
-
-
-def histogram_PTC_positions(PTC_file, window):
-    '''
-    (file, int) -> list
-    Return a list of porportions of the 5' most PTC along the CDS in bins of size window
-    to be use to make a histogram plot
-    '''
-    # count the number of PTC in each bin, taling into consideration only the most 5' PTC
-    range_counts = PTC_positions_along_CDS(PTC_file, window)
-
-    # count the number of such PTC
-    stops = open(PTC_file, 'r')
-    header = stops.readline()
-    genes = set()
-    for line in stops:
-        line = line.rstrip()
-        if line != '':
-            line  = line.split()
-            gene = line[0]
-            genes.add(gene)
-    total = len(genes)
-
-    # calculate proportions:
-    for i in range(len(range_counts)):
-        range_counts[i] = range_counts[i] / total
-
-    stops.close()
-    return range_counts
-
-
-
-def partition_CDS_length(PTC_file):
-    '''
-    (file) -> list
-    Sort the genes in PTC_file according to their length
-    and return a list of dictionnaries for each length quartile
-    and the header of the file as last item
-    '''
-
-    # stote the PTC info in dictionnary
-    stops = open(PTC_file, 'r')
-    PTC = {}
-    header = stops.readline()
-    for line in stops:
-        line = line.rstrip()
-        if line != '':
-            line = line.split()
-            PTC[line[0]] = line
-
-    # compute the length quartiles
-    CDS_length = []
-    for gene in PTC:
-        CDS_length.append(int(PTC[gene][3]))
-
-    quartiles = compute_quartiles(CDS_length)
-
-    # sort genes into dictionnary of length quartile
-    Q1, Q2, Q3, Q4 = {}, {}, {}, {}
-    for gene in PTC:
-        size = int(PTC[gene][3])
-        if size < quartiles[0]:
-            Q1[gene] = PTC[gene]
-        elif size >= quartiles[0] and size < quartiles[1]:
-            Q2[gene] = PTC[gene]
-        elif size >= quartiles[1] and size < quartiles[2]:
-            Q3[gene] = PTC[gene]
-        else:
-            Q4[gene] = PTC[gene]
-
-    stops.close()
-    return [Q1, Q2, Q3, Q4, header]
-
-
-def save_quartiles_to_file(PTC_file):
-    '''
-    Sort the genes according to their CDS length, store them in dictionnaries
-    of quartile length and save each dictionnary to a separate file
-    '''
-
-    quartiles = partition_CDS_length(PTC_file)
-    header = quartiles[-1]
-
-    for i in range(len(quartiles)-1):
-        Q_file = open('PTC_polym_SNPS_only_Q' + str(i+1) +'.txt', 'w')
-        Q_file.write(header)
-        for gene in quartiles[i]:
-            for item in quartiles[i][gene][:-1]:
-                Q_file.write(item + '\t')
-            Q_file.write(quartiles[i][gene][-1] + '\n')
-        Q_file.close()
+    
+    # get the gene coordinates {gene: [start, end, orientation]}
+    coords = MitoGeneCoordinates(MitoGeneFile)
+    # get the positions of stop codon mutations or sites
+    stops = StopCodonPositions(HeteroSummaryFile, MitoGeneFile, Sites = 'mutations', FirstOnly = False)    
+    # create a list of relative positions
+    PTC = []
+    # loop over gene
+    for gene in stops:
+        for i in range(len(stops[gene])):
+            # compute relative position of mutation (position / len(CDS)) * 100
+            position = (stops[gene][i] / (coords[gene][1] - coords[gene][0])) * 100
+            PTC.append(position)
+    return PTC   
+    
 
