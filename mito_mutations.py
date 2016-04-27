@@ -700,7 +700,7 @@ def FindFistStopCodon(HeteroSummaryFile, mito_annotation):
                     # populate dict with position and orientation + or -
                     stops[gene] = [position, line[3][line[3].index('(')+1:-1]]
     infile.close()
-    return stops
+    
     # convert annotation set of indices to coordinates [start, end]
     for gene in mito_annotation:
         mito_annotation[gene] = list(mito_annotation[gene])
@@ -709,13 +709,12 @@ def FindFistStopCodon(HeteroSummaryFile, mito_annotation):
         mito_annotation[gene] = [start, end]
 
     # get the positions relative to gene start in 5' orientation    
-    truc = {}    
     for gene in stops:
         start = GenomicPositionToGenePosition(stops[gene][0], mito_annotation[gene][0], mito_annotation[gene][-1], stops[gene][-1])
         # drop orientation, keep only position
-        truc[gene] = start
+        stops[gene] = start
 
-    return stops, truc
+    return stops
 
 
 
