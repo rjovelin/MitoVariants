@@ -227,11 +227,26 @@ def GetIndividualTumorHeteroplasmies(heteroplasmy_file, sample_size, mito_annota
                     break
             # compare gene names
             if gene != '':
-                if gene != 'ATP8|ATP6' and gene != 'ND4L|ND4' and gene != 'TRNI|TRNQ' and gene != 'TRNC|TRNY':
-                    # note that ATP6 and ATP8 are overlapping over a short region
-                    # and genes ND4 and ND4L are also overlapping
-                    #  and genes TRNI and TRNQ are also overlapping
+                # take 1st gene in overalapping gene pairs
+                overlapping_genes =  ['ATP8|ATP6', 'ND4L|ND4', 'TRNI|TRNQ', 'TRNC|TRNY']
+                # check that the correct gene has been found           
+                if gene not in overlapping_genes:
                     assert gene == MTgene, '{0} and {1} are different genes'.format(gene, MTgene)
+                    # gene variable can be used as gene name
+                else:
+                    # check gene pair, and take 1st gene in pair
+                    for i in range(len(overlapping_genes)):
+                        if gene == overlapping_genes[i]:
+                            if gene == 'TRNI|TRNQ':
+                                # TRNI and TRNQ are on overlapping strand, check orientation
+                                assert '(+)' in line[19] or '(-)' in line[19], 'gene should be oriented'
+                                if '(+)' in line[19]:
+                                    gene = 'TRNI'
+                                elif '(-)' in line[19]:
+                                    gene = 'TRNQ'
+                            else:
+                                # both gene in pair have same orientation, grab first one
+                                gene = overlapping_genes[i][:overlapping_genes[i].index('|')]
             else:
                 # check if position in annotated gene, assign MTgenee to gene
                 if PosInGene == True:
