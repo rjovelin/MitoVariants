@@ -239,14 +239,9 @@ def GetIndividualTumorHeteroplasmies(heteroplasmy_file, sample_size, mito_annota
                         if gene == overlapping_genes[i]:
                             if gene == 'TRNI|TRNQ':
                                 # TRNI and TRNQ are on overlapping strand, check orientation
-                                assert '(+)' in line[19] or '(-)' in line[19], 'gene should be oriented'
-                                if '(+)' in line[19]:
-                                    gene = 'TRNI'
-                                elif '(-)' in line[19]:
-                                    gene = 'TRNQ'
-                            else:
-                                # both gene in pair have same orientation, grab first one
-                                gene = overlapping_genes[i][:overlapping_genes[i].index('|')]
+                                assert '(+)' in line[19], 'TRNI has + orientation'
+                            # grab first gene
+                            gene = overlapping_genes[i][:overlapping_genes[i].index('|')]
             else:
                 # check if position in annotated gene, assign MTgenee to gene
                 if PosInGene == True:
