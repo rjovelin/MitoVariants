@@ -215,10 +215,7 @@ def GetIndividualTumorHeteroplasmies(heteroplasmy_file, sample_size, mito_annota
             # make position 0-based
             position = int(line[1]) -1
             # get ID from filename   
-            if 'GRCH37' in heteroplasmy_file:
-                participant = heteroplasmy_file[:heteroplasmy_file.index('_')]
-            elif 'RNASEQ' in heteroplasmy_file:
-                participant = heteroplasmy_file[:heteroplasmy_file.index('_')]
+            participant = heteroplasmy_file[:heteroplasmy_file.index('_')]
             # get gene name and orientation
             gene = line[18]
             # check gene name
