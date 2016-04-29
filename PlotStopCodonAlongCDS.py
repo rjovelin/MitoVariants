@@ -51,10 +51,11 @@ ax.set_title('Stop codon mutations along coding sequences\n', size = 10, ha = 'c
 # set y axis label
 ax.set_ylabel('Number of PSC mutations', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
 
-# add labels to x-ticks, rotate and align right, set size to 14
-ax.set_xticklabels(list(range(0, 110, 10)), rotation = 0, ha = 'center', size = 10, fontname = 'Helvetica', family = 'sans-serif')
+# add labels to x-ticks, rotate and align right
+ax.set_xticklabels(range(0, 110, 10), rotation = 0, ha = 'center', size = 10, fontname = 'Helvetica', family = 'sans-serif')
 
 plt.yticks(fontsize = 10)
+plt.xticks(range(0, 110, 10))
 
 # set x axis label
 ax.set_xlabel('Relative CDS length (%)', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
@@ -92,19 +93,3 @@ plt.tick_params(
 fig.savefig(outputfile, bbox_inches = 'tight')
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-    
