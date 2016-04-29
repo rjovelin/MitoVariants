@@ -882,7 +882,7 @@ def StopCodonPositions(HeteroSummaryFile, MitoGeneFile, Sites = 'mutations', Fir
 # use this function to get the relative positions of stop codon alelles along the CDS in %
 def StopCodonAlongCDS(HeteroSummaryFile, MitoGeneFile, Sites = 'mutations', FirstOnly = False):
     '''
-    (file, file, int, bool) -> dict
+    (file, file, int, bool) -> list
     Take the Summary file with heteroplasmies detected by MitoSeek and the file with
     mictochondrial coordinates, and return a list with relative positions 
     of stop codon mutations or sites along the CDS for the 5' most upstream
