@@ -291,13 +291,13 @@ def GetIndividualTumorHeteroplasmies(heteroplasmy_file, sample_size, mito_annota
 
 
 # use this function to get the position of all genes in the mitochondrial genome
-def MitoAnnotation(MitoGeneFile):
+def MitoGeneAnnotation(MitoGeneFile):
     '''
     (file) -> dict
     Take a file with rCRS annotation of the mitochondrial genome and return a 
     dict with gene as key and set of position as value in 0-based    
     '''
-        
+    
     # create a dict {gene: set(positions)}
     gene_coord = {}
     
@@ -320,7 +320,6 @@ def MitoAnnotation(MitoGeneFile):
                 gene_coord[gene].add(i)
     # close file
     infile.close()
-    
     return gene_coord
 
 # use this function to get the start and end position of the mitocondrial genes
@@ -329,6 +328,107 @@ def MitoGeneCoordinates(MitoGeneFile):
     (file) -> dict
     Take a file with rCRS annotation of the mitochondrial genome and return a 
     dict with gene as key and list of gene coordinates as value in in 0-based    
+    '''
+    
+    # Get the position indices of the mito genes
+    annotation = MitoGeneAnnotation(MitoGeneFile)
+
+    # create a dict with strand orientation
+    strand = {'ATP6': '+', 'ATP8': '+', 'COX1': '+', 'COX2': '+', 'COX3': '+',
+              'CYTB': '+', 'ND1': '+', 'ND2': '+', 'ND3': '+', 'ND4': '+',
+              'ND4L': '+', 'ND5': '+', 'ND6': '-', 'RNR1': '+', 'RNR2': '+',
+              'TRNA': '-', 'TRNC': '-', 'TRND': '+', 'TRNE': '-', 'TRNF': '+',
+              'TRNG': '+', 'TRNH': '+', 'TRNI': '+', 'TRNK': '+', 'TRNL1': '+',
+              'TRNL2': '+', 'TRNM': '+', 'TRNN': '-', 'TRNP': '-', 'TRNQ': '-',
+              'TRNR': '+', 'TRNS1': '-', 'TRNS2': '+', 'TRNT': '+', 'TRNV': '+',
+              'TRNW': '+', 'TRNY': '-'}
+
+    # create a new dict so that mito_annotation is not modified  [start, end, orientation]
+    coordinates = {}
+    for gene in annotation:
+        coordinates[gene] = list(annotation[gene])
+        coordinates[gene].sort()
+        start, end = coordinates[gene][0], coordinates[gene][-1] + 1
+        coordinates[gene] = [start, end]
+        coordinates[gene].append(strand[gene])
+    
+    return coordinates
+
+
+# use this function to get the D-loop positions
+def FindNonCodingPositions(MitoGeneFile):
+    '''
+    (file) -> dict
+    Take a file with rCRS annotation of the mitochiondrial genes and return a 
+    dict of noncoding region keys and sets of contiguous 0-based indices
+    for each region. Note that the D-loop wraps around the genome and is separated
+    in 2 regions
+    '''
+
+    # create a list with all 0-based indices in the mito genome
+    mito = [i for i in range(16569)]
+    # get the positions of mito genes
+    genes = MitoGeneAnnotation(MitoGeneFile)
+    # remove gene positions
+    for gene in genes:
+        for i in genes[gene]:
+            if i in mito:
+                mito.remove(i)
+    mito.sort()
+    # create a dict to store the contiguous non-genic positions in mito
+    positions = {}
+    # initialize counting variable
+    j = 0
+    # loop over positions in mito
+    for i in range(len(mito)):
+        # initialize dict if j not in position
+        if j not in positions:
+            positions[j] = [mito[i]]
+        else:
+            # add position to list of current j key if positions are contiguous
+            if mito[i] == mito[i -1] + 1:
+                positions[j].append(mito[i])
+            else:
+                # initialize new key
+                j += 1
+    # create a dict with D-loop and noncoding keys
+    mitopos = {}
+    for j in positions:
+        # D loops wraps around
+        if j == 0 or j == 9:
+            region = 'DLoop_' + str(j)
+        else:
+            region = 'NonCoding_' + str(j)
+        mitopos[region] = positions[j]    
+    return mitopos
+    
+# use this function to get the position of all genes and regions in the mitochondrial genome
+def MitoAnnotation(MitoGeneFile):
+    '''
+    (file) -> dict
+    Take a file with rCRS annotation of the mitochondrial genome and return a 
+    dict with gene and region as key and set of position as value in 0-based    
+    '''
+    # get the 0-based positions of all genes
+    genecoord = MitoGeneAnnotation(MitoGeneFile)
+    # use this function to get the D-loop positions
+    regions = FindNonCodingPositions(MitoGeneFile)
+    # create a dict to record positions or genes and regions
+    mitocoord = {}
+    for gene in genecoord:
+        mitocoord[gene] = genecoord[gene]
+    for region in regions:
+        mitocoord[region] = regions[region]
+    
+    return mitocoord
+
+
+# use this function to get the start and end position of the mitocondrial genes and regions
+def MitoCoordinates(MitoGeneFile):
+    '''
+    (file) -> dict
+    Take a file with rCRS annotation of the mitochondrial genome and return a 
+    dict with gene and region as key and list of gene coordinates as value in in 0-based    
     '''
     
     # Get the position indices of the mito genes
@@ -351,8 +451,11 @@ def MitoGeneCoordinates(MitoGeneFile):
         coordinates[gene].sort()
         start, end = coordinates[gene][0], coordinates[gene][-1] + 1
         coordinates[gene] = [start, end]
-        coordinates[gene].append(strand[gene])
-    
+        # check if gene or region
+        if gene in strand:
+            coordinates[gene].append(strand[gene])
+        else:
+            coordinates[gene].append('NA')
     return coordinates
 
 
