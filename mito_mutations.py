@@ -913,10 +913,7 @@ def CommonVariablePositions(FileList):
     '''
     
     # create a set of common variable sites
-    # this 
     CommonSnps = set()
-    # create 
-    
     # loop over file name
     for i in range(len(FileList)):
         # create a set of variable positions for given sample
@@ -942,8 +939,30 @@ def CommonVariablePositions(FileList):
     return CommonSnps
 
 
-
-
-
 # use this function to pool all variable positions among samples
-
+def PoolVariablePositions(FileList):
+    '''
+    (list) -> set
+    Take a list with Heteroplasmy Summary file names for different tumor types
+    and return a set of variable positions found in any tumor types
+    '''
+    
+    # create a set of variable sites
+    Snps = set()
+    # loop over file name
+    for i in range(len(FileList)):
+        infile = open(FileList[i], 'r')
+        # skip header
+        infile.readline()
+        # loop over file
+        for line in infile:
+            if line.rstrip() != '':
+                line = line.rstrip().split('\t')
+                # get position 0-based
+                position = int(line[0]) -1
+                Snps.add(position)
+        infile.close()
+    return Snps
+    
+    
+    
