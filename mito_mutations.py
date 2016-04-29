@@ -225,6 +225,7 @@ def GetIndividualTumorHeteroplasmies(heteroplasmy_file, sample_size, mito_annota
                     # exit loop and compare gene name
                     PosInGene = True
                     break
+            assert PosInGene == True, 'position should be annotated'
             # compare gene names
             if gene != '':
                 # take 1st gene in overalapping gene pairs
@@ -245,9 +246,14 @@ def GetIndividualTumorHeteroplasmies(heteroplasmy_file, sample_size, mito_annota
             else:
                 # check if position in annotated gene, assign MTgenee to gene
                 if PosInGene == True:
-                    gene = MTgene
-                else:
-                    gene = 'NA'
+                    # check that position is noncoding
+                    assert MTgene.startswith('DLoop') or MTgene.startswith('NonCoding'), 'region should be noncoding'
+                    if MTgene.startswith('DLoop'):
+                        gene = 'DLoop'
+                    elif MTgene.startswith('NonCoding'):
+                        gene = 'NonCoding'
+                    else:
+                        gene = MTgene
             if '(+)' in line[19]:
                 orientation = 'L_(+)'
             elif '(-)' in line[19]:
