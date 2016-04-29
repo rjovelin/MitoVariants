@@ -795,3 +795,46 @@ def StopCodonAlongCDS(HeteroSummaryFile, MitoGeneFile, Sites = 'mutations', Firs
     return PTC   
     
 
+# use this function to find the set of common variable positions among samples
+def CommonVariablePositions(FileList):
+    '''
+    (list) -> set
+    Take a list with Heteroplasmy Summary file names for different tumor types
+    and return a set of variable positions shared by all tumor types
+    '''
+    
+    # create a set of common variable sites
+    # this 
+    CommonSnps = set()
+    # create 
+    
+    # loop over file name
+    for i in range(len(FileList)):
+        # create a set of variable positions for given sample
+        VariableSites = set()
+        infile = open(FileList[i], 'r')
+        # skip header
+        infile.readline()
+        # loop over file
+        for line in infile:
+            if line.rstrip() != '':
+                line = line.rstrip().split('\t')
+                # get position 0-based
+                position = int(line[0]) -1
+                VariableSites.add(position)
+        infile.close()
+        # initialize set for 1st file or trim set otherwise
+        if i == 0:
+            # common <- variable (so intersection != empty)
+            CommonSnps = CommonSnps.union(VariableSites)
+        else:
+            CommonSnps = CommonSnps.intersection(VariableSites)
+    
+    return CommonSnps
+
+
+
+
+
+# use this function to pool all variable positions among samples
+
