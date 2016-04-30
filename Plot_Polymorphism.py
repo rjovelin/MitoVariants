@@ -90,19 +90,18 @@ ax = fig.add_subplot(1, 1, 1)
 
 for i in positions:
     if len(polymorphism[i]) != 0:
-        trucmuche += 1
         # find the position of the variable site
         for gene in mito_genes:
-            gene_position = ''
             if i in mito_genes[gene]:
-                gene_position = gene
                 break
-        if gene_position == '':
+        if gene == '':
             for j in polymorphism[i]:
-                ax.scatter(i, j, edgecolor = 'black', facecolor = 'black', lw = 0, s = 5, alpha = 0.8)
+                if j > threshold:
+                    ax.scatter(i, j, edgecolor = 'black', facecolor = 'black', lw = 0, s = 5, alpha = 0.8)
         else:
             for j in polymorphism[i]:
-                ax.scatter(i, j, edgecolor = 'black', facecolor = gene_colors[gene_position], lw = 0, s = 5, alpha = 0.8)
+                if j > threshold:
+                    ax.scatter(i, j, edgecolor = 'black', facecolor = gene_colors[gene], lw = 0, s = 5, alpha = 0.8)
 
 # restrict the x and y axis to the range of data
 ax.set_xlim([0, 16570])
