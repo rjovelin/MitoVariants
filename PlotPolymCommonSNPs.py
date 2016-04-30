@@ -46,7 +46,7 @@ threshold = 0
 # get normal or cancer from command
 sample = 'cancer'
 # get the color panel to use
-colors = 'limited'
+colors = 'full'
 # get outputfile from command
 outputfile = 'testfig.pdf'
 
@@ -73,23 +73,29 @@ for filename in files:
     for i in polymorphism:
         if i in Polym:
             Polym[i].extend(polymorphism[i])
-
+        
 # create a list of positions
 positions = [i for i in Polym]
 
 # check which color panel to use
+# create a dict with gene : color
 if colors == 'full':
-    # create a dict with gene : color
-    gene_colors = {'ATP6': 'yellow', 'ATP8': 'blue', 'COX1': 'lightgrey', 'COX2': 'blue',
-               'COX3': 'green', 'CYTB': 'blue', 'ND1': 'yellow', 'ND2': 'orange',
-               'ND3': 'magenta', 'ND4': 'green', 'ND4L': 'magenta', 'ND5': 'pink',
-               'ND6': 'grey', 'RNR1': 'green', 'RNR2': 'lightgrey', 'TRNA': 'red',
-               'TRNC': 'red', 'TRND':'red', 'TRNE': 'red', 'TRNF': 'red', 'TRNG': 'red',
-               'TRNH': 'red', 'TRNI': 'red', 'TRNK': 'red', 'TRNL1': 'red', 'TRNL2': 'red',
-               'TRNM': 'red', 'TRNN': 'red', 'TRNP': 'red', 'TRNQ': 'red', 'TRNR': 'red',
-               'TRNS1': 'red', 'TRNS2':'red', 'TRNT': 'red', 'TRNV': 'red', 'TRNW': 'red',
-               'TRNY': 'red'}
+    # tRNAs are in red, each portein coding gene has a different color    
+    gene_colors = {'ATP6': [1, 0.988, 0], 'ATP8': [0.78, 0.24, 0.431],
+                   'COX1': [1, 0.757, 0.212], 'COX2': [0.12, 0.557, 0.682], 
+                   'COX3': [0.145, 0.529, 0], 'CYTB': [0.145, 0.51, 0.745],
+                   'ND1': [1, 0.843, 0], 'ND2': [1, 0.443, 0],
+                   'ND3': [0.576, 0.12, 0.718], 'ND4': [0.239, 0.878, 0],
+                   'ND4L': [0.329, 0.004, 0.408], 'ND5': [0.875, 0, 0.384],
+                   'ND6': [1, 0.69, 0], 'RNR1': [0, 0.741, 0.424],
+                   'RNR2': [0, 0.427, 0.243], 'TRNA': 'red',
+                   'TRNC': 'red', 'TRND':'red', 'TRNE': 'red', 'TRNF': 'red', 'TRNG': 'red',
+                   'TRNH': 'red', 'TRNI': 'red', 'TRNK': 'red', 'TRNL1': 'red', 'TRNL2': 'red',
+                   'TRNM': 'red', 'TRNN': 'red', 'TRNP': 'red', 'TRNQ': 'red', 'TRNR': 'red',
+                   'TRNS1': 'red', 'TRNS2':'red', 'TRNT': 'red', 'TRNV': 'red', 'TRNW': 'red',
+                   'TRNY': 'red'}
 elif colors == 'black':
+    # tRNAs are in red all others are in black
     gene_colors = {'ATP6': 'black', 'ATP8': 'black', 'COX1': 'black', 'COX2': 'black',
                'COX3': 'black', 'CYTB': 'black', 'ND1': 'black', 'ND2': 'black',
                'ND3': 'black', 'ND4': 'black', 'ND4L': 'black', 'ND5': 'black',
@@ -101,6 +107,7 @@ elif colors == 'black':
                'TRNY': 'red'}
 
 elif colors == 'limited':
+    # tRNAs are in red, genes are in grey and noncoding are in black
     gene_colors = {'ATP6': 'grey', 'ATP8': 'grey', 'COX1': 'grey', 'COX2': 'grey',
                'COX3': 'grey', 'CYTB': 'grey', 'ND1': 'grey', 'ND2': 'grey',
                'ND3': 'grey', 'ND4': 'grey', 'ND4L': 'grey', 'ND5': 'grey',
@@ -122,18 +129,16 @@ for i in positions:
     if len(Polym[i]) != 0:
         # find the position of the variable site
         for gene in mito_genes:
-            gene_position = ''
             if i in mito_genes[gene]:
-                gene_position = gene
                 break
-        if gene_position == '' or gene_position not in gene_colors:
-            for j in polymorphism[i]:
+        if gene == '' or gene not in gene_colors:
+            for j in Polym[i]:
                 if j > threshold:
                     ax.scatter(i, j, edgecolor = 'black', facecolor = 'black', lw = 0, s = 5, alpha = 0.8)
         else:
-            for j in polymorphism[i]:
+            for j in Polym[i]:
                 if j > threshold:
-                    ax.scatter(i, j, edgecolor = 'black', facecolor = gene_colors[gene_position], lw = 0, s = 5, alpha = 0.8)
+                    ax.scatter(i, j, edgecolor = 'black', facecolor = gene_colors[gene], lw = 0, s = 5, alpha = 0.8)
 
 # restrict the x and y axis to the range of data
 ax.set_xlim([0, 16570])
@@ -177,7 +182,7 @@ ax.spines["left"].set_visible(False)
 plt.tick_params(
     axis='both',       # changes apply to the x-axis and y-axis (other option : x, y)
     which='both',      # both major and minor ticks are affected
-    bottom='on',      # ticks along the bottom edge are off
+    bottom='off',      # ticks along the bottom edge are off
     top='off',         # ticks along the top edge are off
     right = 'off',
     left = 'off',          
