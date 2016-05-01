@@ -32,23 +32,14 @@ from mito_mutations import *
 # - outputfile: save fig to outputfile
 
 
-## get thresold from command
-#threshold = float(sys.argv[1])
-## get normal or cancer from command
-#sample = sys.argv[2]
-## get the color panel to use
-#colors = sys.argv[3]
-## get outputfile from command
-#outputfile = sys.argv[6]
-
-
-threshold = 0
+# get thresold from command
+threshold = float(sys.argv[1])
 # get normal or cancer from command
-sample = 'cancer'
+sample = sys.argv[2]
 # get the color panel to use
-colors = 'full'
+colors = sys.argv[3]
 # get outputfile from command
-outputfile = 'testfig.pdf'
+outputfile = sys.argv[4]
 
 
 # make a list of hetero summary files
