@@ -1,0 +1,5 @@
+# only keep track of python and markdown files
+*
+!.gitignore
+!*.py
+!*.md
