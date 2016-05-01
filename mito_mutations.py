@@ -964,5 +964,52 @@ def PoolVariablePositions(FileList):
         infile.close()
     return Snps
     
+   
+# use this function to count the number of mutations in each category
+def MutationalEffect(HeteroSummaryFile, Sites = 'mutations'):
+    '''
+    (file) -> dict
+    Take the heteroplasmy summary file and return a dict with mutation type
+    as key and a list of variable positions, counting the number of mutations
+    (by default) or the number of variable sites
+    '''
     
+    # create a dict {mutation_type : [positions]}
+    MutationTypes = {}
     
+    infile = open(HeteroSummaryFile)
+    infile.readline()
+    for line in infile:
+        line = line.rstrip()
+        if line != '':
+            line = line.split('\t')
+            # get position 0-based
+            position = int(line[0]) - 1
+            # get mutation category
+            if line[2].startswith('TRN'):
+                effect = 'tRNA'
+            elif line[2] == 'DLoop':
+                effect = 'DLoop'
+            elif line[2] == 'NonCoding':
+                effect = 'NonCoding'
+            elif line[2] == 'NA':
+                effect = 'NA'
+            else:
+                effect = line[4]
+            # populate dict
+            if effect in MutationTypes:
+                MutationTypes[effect].append(position)
+            else:
+                MutationTypes[effect] = [position]
+    infile.close()
+    
+    # check if variable sites are recorded or mutations
+    if Sites == 'sites':
+        # collapse all identical mutations
+        for effect in MutationTypes:
+            MutationTypes[effect] = set(MutationTypes[effect])
+        return MutationTypes
+    elif Sites == 'mutations':
+        return MutationTypes
+    
+
