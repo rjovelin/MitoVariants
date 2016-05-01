@@ -11,6 +11,7 @@ Created on Sun May  1 08:02:51 2016
 
 # usage python3 PlotFreqFunctionalEffect.py [options]
 # - [singlefile/allfiles]: whether a single summary file or multiple summary files
+# - [frequency/counts]: plot frequency or counts of mutational effects
 # -tumor: summary file of tumor if singlefile is used
 # - outputfile
 
@@ -27,22 +28,23 @@ files = [i for i in os.listdir() if 'RNAOnly' in i and '.txt' in i]
 
 ##use single of all summary files
 #which_files = sys.argv[1]
+#datatype = sys.argv[2] 
 #if which_files == 'singlefile':
 #    # get tumor from command
-#    tumor = sys.argv[2]
+#    tumor = sys.argv[3]
 #    # create a 1 item list with the summary file
 #    for filename in files:
 #        if tumor in filename:
 #            break
 #    files = [filename]
-#    outputfile = sys.argv[3]
+#    outputfile = sys.argv[4]
 #elif which_files == 'allfiles':
-#    outputfile = sys.argv[2]    
+#    outputfile = sys.argv[3]    
 
 
 outputfile = 'testfig.pdf'
 Sites = 'mutations'
-frequency = 'counts'
+frequency = 'frequency'
 which_files = 'allfiles'
 
 # create a dict {mutation: [list of positions]}
@@ -105,8 +107,14 @@ plt.bar(bar_left, counts, width=bar_width, color= 'red')
 # set the x ticks with names
 plt.xticks(tick_pos, categories, size = 12)
 
+#### need to edit the y ticks
+
 if frequency == 'frequency':
+    # count total number of mutations
+    total = sum(counts)
+    print(total)
     # set the y ticks
+    counts = list(map(lambda x: x / total, counts))
     plt.yticks([i/100 for i in range(0, 125, 25)], [0, 0.25, 0.50, 0.75, 1])
 
 # set axis labels
