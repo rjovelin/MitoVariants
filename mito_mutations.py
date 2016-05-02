@@ -1006,4 +1006,87 @@ def MutationalEffect(HeteroSummaryFile, Sites = 'mutations'):
     elif Sites == 'mutations':
         return MutationTypes
     
+############################## edit below
 
+
+# use this function to compute the MAF for various SNP functional categories
+def ComputeMAFFunction(HeteroSummaryFile):
+    '''
+    (file) -> dict
+    Take the file with heteroplasmy summary and return a dict with SNP
+    functional category : list of MAF values pairs
+    '''
+    
+    # create a dict {mutation_type : [positions]}
+    MutationTypes = {}
+    
+    
+    # loop over file
+    
+    # get position
+    # get the minor alleles at that position
+    # count the number of individuals for each minor allele
+    # get functional effect
+    # get total number of individual at that position
+    # MAF <- divide number of ind / total 
+    # record MAF     
+    
+    # create a variable to be updarted at each new position
+    SNPPos = ''   
+        
+    infile = open(HeteroSummaryFile)
+    infile.readline()
+    for line in infile:
+        line = line.rstrip()
+        if line != '':
+            line = line.split('\t')
+            # get mutation category
+            if line[2].startswith('TRN'):
+                effect = 'tRNA'
+            elif line[2] == 'DLoop':
+                effect = 'DLoop'
+            elif line[2] == 'NonCoding':
+                effect = 'NonCoding'
+            elif line[2] == 'NA':
+                effect = 'NA'
+            else:
+                effect = line[4]
+            # get position 0-based, positions are ordered in summary file
+            position = int(line[0]) - 1
+            # check if reading variant at same position
+            if position == SNPPos:
+                # looking at the same position
+                # add sample size to list
+                sample_size.append(int(line[11]))
+                # grab the minor alleles for given functional category
+                if effect in MinorAlleles:
+                    MinorAlleles[effect].append(line[8])
+                else:
+                    MinorAlleles[effect] = [line[8]]
+            elif position != SNPPos:
+                # found a new variable sites, check if start or file or not
+                if SNPPos != '':
+                    # update dict before going further
+                    for effect in MinorAlleles:
+                        # loop over minor alleles for that effect at that position
+                        minors = set(MinorAlleles[effect])
+                        for base in minors:
+                            # get MAF of each minor allele
+                            MAF = MinorAlleles[effect].count(base) / (sum(sample_size) / len(sample_size))
+                            if effect in MutationTypes:
+                                MutationTypes[effect].append(MAF)
+                            else:
+                                MutationTypes[effect] = [MAF]
+                # initialize variables for new site
+                sample_size = [int(line[11])]
+                MinorAlleles = {}
+                MinorAlleles[effect] = [line[8]]
+                SNPPos = position
+    
+    infile.close()
+    return MutationTypes
+    
+    
+    
+    
+    
