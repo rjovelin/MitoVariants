@@ -749,7 +749,7 @@ def IdentifyMultiAllelicPositions(HeteroplasmyFile, threshold):
     '''
     (file, num) -> dict
     Return a dictionary with individual ID as key and an inner dictionary
-    of position: list of alleles with read numbers > threshold as value
+    of position: list of alleles with read numbers > threshold (%) as value
     '''
     
     # create a dict of dict {individual : {position : [allele1, allele2, allele3, allele4]}}
