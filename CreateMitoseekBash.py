@@ -111,8 +111,8 @@ for line in infile:
             newfile.write('module load bioperl/1.6.1\n')
             newfile.write('module load perl_extra\n')
             newfile.write('perl mitoSeek_debug.pl -i  /exec5/GROUP/awadalla/awadalla/awadalla_group/TCGA/Mitoseek/' + workingDir +
-            myfile + ' -t ' + str(t) + ' -sb 0 -sp 1 -mbq ' + str(Phred) + ' -hp 1 -ha 2 -r rCRS -R rCRS -o /exec5/GROUP/awadalla/awadalla/awadalla_group/TCGA/Mitoseek/' + workingDir +
-            participant + '_' + datatype + '_' + genome + ' -samtools /home/apps/Logiciels/samtools/0.1.19/bin/samtools' + '\n')
+            myfile + ' -t ' + str(t) + ' -sb 0 -sp 1 -mbq ' + str(Phred) + ' -hp 1 -ha 2 -r rCRS -R rCRS -o /exec5/GROUP/awadalla/awadalla/awadalla_group/TCGA/Mitoseek/' 
+            + workingDir + '/' + tumor + '/' + participant + '_' + datatype + '_' + genome + ' -samtools /home/apps/Logiciels/samtools/0.1.19/bin/samtools' + '\n')
             newfile.close()            
             MyCommand = 'qsub -l walltime=2:00:00,nodes=1:ppn=4 ' + filepath + participant + '_' + datatype + '_' + genome + '.sh'
             os.system(MyCommand)
