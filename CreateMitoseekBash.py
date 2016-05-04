@@ -40,6 +40,13 @@ elif Phred == 20:
 # get tumor from ID file
 tumor = IDFile[:IDFile.index('_')]
 
+# check if folder for tumor already exists
+try:
+    os.listdir(tumor +'/')
+except:
+    # create folder if it doesn't exist
+    os.mkdir(tumor + '/')
+
 # assign t = 4 by default, unless data is RNASeq
 t = 4
 
