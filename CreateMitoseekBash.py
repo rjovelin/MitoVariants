@@ -11,8 +11,8 @@ import sys
 
 print('done importing modules')
 
-# use this script to prepare bash files and launch mitoseek on thse files
-# Precondition, place this script in /RQusagers/rjovelin/awadalla_group/TCGA/Mitoseek/ + (DestinationFolder) 
+# use this script to prepare bash files and launch mitoseek on these files
+# Precondition, place this script in /RQusagers/rjovelin/awadalla_group/TCGA/Mitoseek/ + (working_directory) 
 
 # usage LaunchMitoSeek.py [options]
 # - ID_file: file with participant ID and correspnding bam ID
@@ -33,9 +33,12 @@ print(Phred)
 
 
 if Phred == 13:
-    DestinationFolder = 'mitoseek_hp1_mbq13/'
+    workingDir = 'mitoseek_hp1_mbq13/'
 elif Phred == 20:
-    DestinationFolder = 'mitoseek_hp1_mbq20/'
+    workingDir = 'mitoseek_hp1_mbq20/'
+
+# get tumor from ID file
+tumor = IDFile[:IDFile.index('_')]
 
 # assign t = 4 by default, unless data is RNASeq
 t = 4
@@ -60,8 +63,8 @@ for line in infile:
                 myfile1 = line[2] + '.woPCRdup.PP.NoSA.recalibrate.bam'
                 myfile2 = line[3] + '.woPCRdup.PP.NoSA.recalibrate.bam'
             elif genome == 'RNASEQ':
-                myfile1 = line[2] + '.MT.woPCRDUP.PP.UM.bam'
-                myfile2 = line[2] + '.MT.woPCRDUP.PP.UM.bam'
+                myfile1 = line[2]
+                myfile2 = line[2]
                 t = 3
             else:
                 myfile1 = line[2] + '.woPCRdup.PP.UM.recalibrate.bam'
@@ -72,37 +75,36 @@ for line in infile:
             if genome == 'GRCH37':
                 myfile = line[2] + '.woPCRdup.PP.NoSA.recalibrate.bam'
             elif genome == 'RNASEQ':
-                myfile = line[2] + '.MT.woPCRDUP.PP.UM.bam'
+                myfile = line[2] 
                 t = 3
-            else:
-                myfile = line[2] + '.woPCRdup.PP.UM.recalibrate.bam'
-                
+                            
         
         # open file for writing command
-        filepath = '/exec5/GROUP/awadalla/awadalla/awadalla_group/TCGA/Mitoseek/' + DestinationFolder
+        filepath = '/exec5/GROUP/awadalla/awadalla/awadalla_group/TCGA/Mitoseek/' + workingDir + '/' + tumor + '/'
         if sample_type == 'paired':
-            outputfile =  filepath + participant + '_' + genome + '.sh'
-            newfile = open(outputfile, 'w')
-            newfile.write('cd /RQusagers/rjovelin/awadalla_group/Programs/MitoSeek-1.3/' + '\n')
-            newfile.write('module load bioperl/1.6.1\n')
-            newfile.write('module load perl_extra\n')
-            newfile.write('perl mitoSeek_debug.pl -i  /exec5/GROUP/awadalla/awadalla/awadalla_group/TCGA/Mitoseek/' + DestinationFolder +
-            myfile1 + ' -j /exec5/GROUP/awadalla/awadalla/awadalla_group/TCGA/Mitoseek/' + DestinationFolder + myfile2 + 
-            ' -t ' + str(t) + ' -sb 0 -sp 1 -mbq ' + str(Phred) + ' -hp 1 -ha 2 -r rCRS -R rCRS -o /exec5/GROUP/awadalla/awadalla/awadalla_group/TCGA/Mitoseek/' + DestinationFolder +
-            participant + '_' + genome + ' -samtools /home/apps/Logiciels/samtools/0.1.19/bin/samtools' + '\n')
-            newfile.close()
-            MyCommand = 'qsub -l walltime=2:00:00,nodes=1:ppn=4 ' + filepath + participant + '_' + genome + '.sh' 
-            os.system(MyCommand)
-            print(MyCommand)
+            print('paired')
+#            outputfile =  filepath + participant + '_' + genome + '.sh'
+#            newfile = open(outputfile, 'w')
+#            newfile.write('cd /RQusagers/rjovelin/awadalla_group/Programs/MitoSeek-1.3/' + '\n')
+#            newfile.write('module load bioperl/1.6.1\n')
+#            newfile.write('module load perl_extra\n')
+#            newfile.write('perl mitoSeek_debug.pl -i  /exec5/GROUP/awadalla/awadalla/awadalla_group/TCGA/Mitoseek/' + workingDir +
+#            myfile1 + ' -j /exec5/GROUP/awadalla/awadalla/awadalla_group/TCGA/Mitoseek/' + workingDir + myfile2 + 
+#            ' -t ' + str(t) + ' -sb 0 -sp 1 -mbq ' + str(Phred) + ' -hp 1 -ha 2 -r rCRS -R rCRS -o /exec5/GROUP/awadalla/awadalla/awadalla_group/TCGA/Mitoseek/' + DestinationFolder +
+#            participant + '_' + genome + ' -samtools /home/apps/Logiciels/samtools/0.1.19/bin/samtools' + '\n')
+#            newfile.close()
+#            MyCommand = 'qsub -l walltime=2:00:00,nodes=1:ppn=4 ' + filepath + participant + '_' + genome + '.sh' 
+#            os.system(MyCommand)
+#            print(MyCommand)
         
         elif sample_type == 'unpaired':
-            outputfile = './' + participant + '_' + datatype + '_' + genome + '.sh' 
+            outputfile = './' + tumor + '/' + participant + '_' + datatype + '_' + genome + '.sh' 
             newfile = open(outputfile, 'w')
             newfile.write('cd /RQusagers/rjovelin/awadalla_group/Programs/MitoSeek-1.3/' + '\n')
             newfile.write('module load bioperl/1.6.1\n')
             newfile.write('module load perl_extra\n')
-            newfile.write('perl mitoSeek_debug.pl -i  /exec5/GROUP/awadalla/awadalla/awadalla_group/TCGA/Mitoseek/' + DestinationFolder +
-            myfile + ' -t ' + str(t) + ' -sb 0 -sp 1 -mbq ' + str(Phred) + ' -hp 1 -ha 2 -r rCRS -R rCRS -o /exec5/GROUP/awadalla/awadalla/awadalla_group/TCGA/Mitoseek/' + DestinationFolder +
+            newfile.write('perl mitoSeek_debug.pl -i  /exec5/GROUP/awadalla/awadalla/awadalla_group/TCGA/Mitoseek/' + workingDir +
+            myfile + ' -t ' + str(t) + ' -sb 0 -sp 1 -mbq ' + str(Phred) + ' -hp 1 -ha 2 -r rCRS -R rCRS -o /exec5/GROUP/awadalla/awadalla/awadalla_group/TCGA/Mitoseek/' + workingDir +
             participant + '_' + datatype + '_' + genome + ' -samtools /home/apps/Logiciels/samtools/0.1.19/bin/samtools' + '\n')
             newfile.close()            
             MyCommand = 'qsub -l walltime=2:00:00,nodes=1:ppn=4 ' + filepath + participant + '_' + datatype + '_' + genome + '.sh'
@@ -110,3 +112,10 @@ for line in infile:
             print(MyCommand)
         
 infile.close()
+
+
+
+
+
+
+
