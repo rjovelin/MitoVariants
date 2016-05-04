@@ -44,12 +44,10 @@ for filename in inputfiles:
     infile.close()
     
 # create a list of sh error files
-errorFiles = [i for i in os.listdir() if '.sh.e' in i]
-# create a list of sh outputfiles
-outFiles = [i for i in os.listdir() if '.sh.o' in i]
+ShFiles = [i for i in os.listdir() if '.sh.e' in i or '.sh.o' in i]
 
-# loop of error files
-for filename in errorFiles:
+# loop of sh files
+for filename in ShFiles:
     # get individual ID
     individual = filename[:filename.index('_')] 
     # extract datatype
