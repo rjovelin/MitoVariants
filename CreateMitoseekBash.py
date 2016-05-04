@@ -66,7 +66,7 @@ for line in infile:
             t = 3
                             
         # open file for writing command
-        filepath = '/exec5/GROUP/awadalla/awadalla/awadalla_group/TCGA/Mitoseek/' + workingDir + '/' + tumor + '/'
+        filepath = '/exec5/GROUP/awadalla/awadalla/awadalla_group/TCGA/Mitoseek/' + workingDir + tumor + '/'
         outputfile = './' + tumor + '/' + participant + '_' + datatype + '_' + genome + '.sh' 
         newfile = open(outputfile, 'w')
         newfile.write('cd /RQusagers/rjovelin/awadalla_group/Programs/MitoSeek-1.3/' + '\n')
