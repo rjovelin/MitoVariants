@@ -60,7 +60,7 @@ for line in infile:
         # get info on data type (tumor, normal, etc)
         datatype = line[3]
         if genome == 'GRCH37':
-            myfile = line[2] + '.woPCRdup.PP.NoSA.recalibrate.bam'
+            myfile = line[2] 
         elif genome == 'RNASEQ':
             myfile = line[2] 
             t = 3
