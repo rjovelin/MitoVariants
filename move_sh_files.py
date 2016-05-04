@@ -53,7 +53,7 @@ for filename in ShFiles:
     # extract datatype
     if 'RNA' in filename:
         datatype = 'RNAseq'
-    elif 'WGS' in filename:
+    elif 'GRCH37' in filename:
         datatype = 'WGS'
     # find the destination folder
     for tumor in MapTumor[datatype]:
