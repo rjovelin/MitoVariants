@@ -11,7 +11,7 @@ Created on Wed May  4 14:44:26 2016
 import os
 
 # create a set of tumor from input file names
-inputfiles = [i for i in os.listdir() if '.txt' and 'WGS' in i or 'RNAseq' in i]
+inputfiles = [i for i in os.listdir() if '.txt' in i and ('WGS' in i or 'RNAseq' in i)]
 
 tumor_types = set()
 for filename in inputfiles:
@@ -42,7 +42,7 @@ for filename in inputfiles:
             individual = line[0]
             MapTumor[datatype][tumor].append(individual)
     infile.close()
-    
+
 # create a list of sh error files
 ShFiles = [i for i in os.listdir() if '.sh.e' in i or '.sh.o' in i]
 
@@ -62,6 +62,7 @@ for filename in ShFiles:
             # tumor found, exit loop
             TumorFound = True            
             break
+    
     # check that tumor has been found
     assert TumorFound == True, 'individual should be mapped to tumor'
     # move filename to appropriate folder   
