@@ -9,6 +9,8 @@ Created on Wed Feb 10 15:28:27 2016
 # place this script in the folder containing the mitoseek subdirectories
 
 # usage python3 GenerateMitoseekSummaryFile.py options
+
+# [cancer]: name of cancer (even for normal tissue)
 # [normal/tumor]: tissue type
 # [WGS/RNA]: use RNAseq or WGS mitoseek outputs
 # BlacklistFile: file with blacklisted individuals
@@ -21,12 +23,15 @@ import sys
 import numpy as np
 from mito_mutations import *
 
-tissue = sys.argv[1]
-dataset = sys.argv[2]
-BlacklistFile = sys.argv[3]
-MinimumReadDepth = int(sys.argv[4])
-PositionReadDepth = int(sys.argv[5])
-outputfile = sys.argv[6]
+cancer = sys.argv[1]
+tissue = sys.argv[2]
+dataset = sys.argv[3]
+BlacklistFile = sys.argv[4]
+MinimumReadDepth = int(sys.argv[5])
+PositionReadDepth = int(sys.argv[6])
+
+# build outputfile name
+outputfile = 'HeteroplasmySummary_' + cancer + '_' + tissue + '_' + dataset + '.txt' 
 
 
 # check data sets, filter out individuals mapped to ref different than GRCH37 if WGS
