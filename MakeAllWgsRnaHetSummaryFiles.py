@@ -22,21 +22,36 @@ for i in cancers:
     try:
         os.listdir(i)
     except:
-        to_delete.add(i)
+        to_remove.add(i)
+    if i == '__pycache__':
+        to_remove.add(i)
 # remve files and non-cancer folders
-for i in to_delete:
-    folders.remove(i)
+for i in to_remove:
+    cancers.remove(i)
 print('N cancers', len(cancers))        
+print(cancers)
 
+EssentialFiles = ['BlackListedIndividuals.txt', 'GenerateMitoseekSummaryFile.py', 'rCRS_genes_MT.text.txt']
 
+# loop over cancer type
+for i in range(len(cancers)):
+    # copy essential files to TP_RNASeq and TP_WGS for all cancers
+    for j in EssentialFiles:
+        os.system('cp ' + j + ' ' + cancers[i] + '/TP_RNASeq/')
+        os.system('cp ' + j + ' ' + cancers[i] + '/TP_WGS/')
+print('done copying files')
 
+# loop over cancer type
+for i in range(len(cancers)):
+    # move to TP_RNASeq in Cancer folder
+    os.chdir(i + '/TP_RNASeq/')
+    # generate summary file
+    os.system('python3 GenerateMitoseekSummaryFile.py ' + cancers[i] + ' tumor RNA BlackListedIndividuals.txt 1000 1000')
+    # move to TP_WGS in cancer folder
+    os.system('../TP_WGS/')
+    os.system('python3 GenerateMitoseekSummaryFile.py ' + cancers[i] + ' tumor WGS BlackListedIndividuals.txt 1000 1000')
+    # move back to mitoseek_hp1_mbq20
+    os.chdir('../../')
 
-
-
-
-
-
-
- BlackListedIndividuals.txt
- GenerateMitoseekSummaryFile.py
-  rCRS_genes_MT.text.txt
+print('done generating summary files')
+    
