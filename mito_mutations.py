@@ -225,9 +225,9 @@ def GetIndividualTumorHeteroplasmies(heteroplasmy_file, sample_size, mito_annota
                     # exit loop and compare gene name
                     PosInGene = True
                     break
-            assert PosInGene == True, 'position should be annotated'
             # compare gene names
             if gene != '':
+                assert PosInGene == True, 'position should be annotated'
                 # take 1st gene in overalapping gene pairs
                 overlapping_genes =  ['ATP8|ATP6', 'ND4L|ND4', 'TRNI|TRNQ', 'TRNC|TRNY']
                 # check that the correct gene has been found           
@@ -244,16 +244,16 @@ def GetIndividualTumorHeteroplasmies(heteroplasmy_file, sample_size, mito_annota
                             # grab first gene
                             gene = overlapping_genes[i][:overlapping_genes[i].index('|')]
             else:
-                # check if position in annotated gene, assign MTgenee to gene
-                if PosInGene == True:
-                    # check that position is noncoding
-                    assert MTgene.startswith('DLoop') or MTgene.startswith('NonCoding'), 'region should be noncoding'
-                    if MTgene.startswith('DLoop'):
-                        gene = 'DLoop'
-                    elif MTgene.startswith('NonCoding'):
-                        gene = 'NonCoding'
-                    else:
-                        gene = MTgene
+                # check that position is in non-coding
+                if PosInGene == False:
+                    print(participant, position)
+                assert PosInGene == True, 'position should be annotated in non-coding'
+                # check that position is noncoding
+                assert MTgene.startswith('DLoop') or MTgene.startswith('NonCoding'), 'region should be noncoding'
+                if MTgene.startswith('DLoop'):
+                    gene = 'DLoop'
+                elif MTgene.startswith('NonCoding'):
+                    gene = 'NonCoding'
             if '(+)' in line[19]:
                 orientation = 'L_(+)'
             elif '(-)' in line[19]:
@@ -278,7 +278,10 @@ def GetIndividualTumorHeteroplasmies(heteroplasmy_file, sample_size, mito_annota
             # get major and minor allele counts
             major_count, minor_count = line[16], line[17]
             # get sample size
-            N = str(len(sample_size[position]))
+            if position in sample_size:
+                N = str(len(sample_size[position]))
+            else:
+                N = 0
             # get read counts for each nucleotide
             forward_A, forward_T, forward_C, forward_G = line[3], line[4], line[5], line[6]
             reverse_A, reverse_T, reverse_C, reverse_G = line[7], line[8], line[9], line[10]            
@@ -361,52 +364,47 @@ def MitoGeneCoordinates(MitoGeneFile):
     return coordinates
 
 
-# use this function to get the D-loop positions
+# use this function to get the D-loop and non-coding positions positions
 def FindNonCodingPositions(MitoGeneFile):
     '''
     (file) -> dict
     Take a file with rCRS annotation of the mitochiondrial genes and return a 
-    dict of noncoding region keys and sets of contiguous 0-based indices
-    for each region. Note that the D-loop wraps around the genome and is separated
-    in 2 regions
+    dict with noncoding and DLoop as keys and sets 0-based indices for each region.
+    Note that the D-loop wraps around the genome and is separated in 2 regions
     '''
 
     # create a list with all 0-based indices in the mito genome
     mito = [i for i in range(16569)]
     # get the positions of mito genes
     genes = MitoGeneAnnotation(MitoGeneFile)
-    # remove gene positions
-    for gene in genes:
-        for i in genes[gene]:
-            if i in mito:
-                mito.remove(i)
-    mito.sort()
     # create a dict to store the contiguous non-genic positions in mito
     positions = {}
-    # initialize counting variable
-    j = 0
-    # loop over positions in mito
-    for i in range(len(mito)):
-        # initialize dict if j not in position
-        if j not in positions:
-            positions[j] = [mito[i]]
-        else:
-            # add position to list of current j key if positions are contiguous
-            if mito[i] == mito[i -1] + 1:
-                positions[j].append(mito[i])
-            else:
-                # initialize new key
-                j += 1
-    # create a dict with D-loop and noncoding keys
-    mitopos = {}
-    for j in positions:
-        # D loops wraps around
-        if j == 0 or j == 9:
-            region = 'DLoop_' + str(j)
-        else:
-            region = 'NonCoding_' + str(j)
-        mitopos[region] = positions[j]    
-    return mitopos
+    
+    # D loop positions are [0:576] and [16023: 16569]
+    positions['DLoop'] = set()
+    for i in range(0, 576, 1):
+        positions['DLoop'].add(i)
+    for i in range(16023, 16569, 1):
+        positions['DLoop'].add(i)
+           
+    # record noncoding positions
+    noncoding = set()
+    # make a list of coding positions, including the DLoop
+    coding = set()
+    for gene in positions:
+        for j in positions[gene]:
+            coding.add(j)
+    for gene in genes:
+        for j in genes[gene]:
+            coding.add(j)
+    for i in mito:
+        if i not in coding:
+            noncoding.add(i)
+    # update positions with noncoding indices
+    positions['NonCoding'] = noncoding
+    assert len(positions) == 2, 'should only have noncoding and Dloop'    
+    
+    return positions
     
 # use this function to get the position of all genes and regions in the mitochondrial genome
 def MitoAnnotation(MitoGeneFile):

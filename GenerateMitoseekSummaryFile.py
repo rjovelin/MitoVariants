@@ -36,12 +36,14 @@ if dataset == 'WGS':
 elif dataset == 'RNA':
     # bams were already selected with ref GRCH37
     folders = os.listdir('./')
-    to_delete = []
+    to_delete = set()
     for i in folders:
         try:
             os.listdir(i)
         except:
-            to_delete.append(i)
+            to_delete.add(i)
+        if 'RNASEQ' not in i:
+            to_delete.add(i)
     for i in to_delete:
         folders.remove(i)
 print(len(folders))        
@@ -57,7 +59,7 @@ blacklisted = BlackListed(BlacklistFile)
 # this function already ignores duplicate individuals
 # and counts individuals with minimum read depth at given position
 sample_size = SampleSize('./', tissue, dataset, PositionReadDepth)
-print(len(sample_size))
+print('positins with sample size', len(sample_size))
 # remove blaclisted individuals and individuals with too low read depth
 for position in sample_size:
     to_delete = set()
@@ -66,10 +68,19 @@ for position in sample_size:
             to_delete.add(participant)
     for participant in to_delete:
         sample_size[position].remove(participant)
+# delete positon with no individuals
+to_delete = []
+for position in sample_size:
+    if sample_size[position] == 0:
+        to_delete.append(position)
+if len(to_delete)  != 0:
+    for position in to_delete:
+        del sample_size[position]
+print('positions with sample size after removing low coverage individuals', len(sample_size))
 
 # get the gene annotations
 MT_annotation =  MitoAnnotation('rCRS_genes_MT.text.txt')
-print(len(MT_annotation))
+print('MT regions', len(MT_annotation))
 
 # create a dictionary to store the variant info for all individuals
 MitoVariants = {}
@@ -82,11 +93,11 @@ for subfolder in folders:
     # update MitoVariants with variant info
     for position in variants:
         # compute the read coverage for the given position
-        reads = sum(list(map(lambda x: int(x), variants[position][12:20])))
+        reads = sum(list(map(lambda x: int(x), variants[position][11:19])))
         assert type(reads) == int, 'sum of read counts should be an integer'
         # do not consider blacklisted participant IDs and participants with median read depth <= minimum
         # do not consider positions with read depth <= minimum
-        if variants[positions][0] not in blacklisted and ReadDepth[variants[positions][0]] > MinimumReadDepth and reads > PositionReadDepth:
+        if variants[position][0] not in blacklisted and ReadDepth[variants[position][0]] > MinimumReadDepth and reads > PositionReadDepth:
             if position in MitoVariants:
                 MitoVariants[position].append(variants[position])
             else:
