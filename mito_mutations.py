@@ -58,11 +58,11 @@ def FindDuplicateIndividuals(folder):
 
 
 # use this function to make a list of folders corresponding to GRCH37 ref
-def GetValidReference(folder):
+def GetValidReference(folder, tissue_type):
     '''
-    (str) -> list
-    Look for all the subdirectories in folder and return a list of
-    subdirectory names with GRCH37 as reference
+    (str, str) -> list
+    Look for all the subdirectories in folder for normal or tumor tissue type
+    and return a list of subdirectory names with GRCH37 as reference
     '''
     
     # create a list of subfolder, exluding any files
@@ -83,6 +83,16 @@ def GetValidReference(folder):
         if i[-7:] == '_GRCH37':
             # keep subfolder with GRCH37 as ref
             valid.append(i)
+    # remove subdirectories that do not correspond to tissue tpe
+    to_remove = []
+    for i in valid:
+        if tissue_type == 'normal' and 'NT' not in i:
+            to_remove.append(i)
+        elif tissue_type == 'tumor' and 'TP' not in i:
+            to_remove.append(i)
+    for i in to_remove:
+        valid.remove(i)
+    
     return valid    
     
     
@@ -116,32 +126,41 @@ def SampleSize(folder, tissue_type, dataset, minimum_coverage):
     
     # loop over directories
     for i in directories:
-        # get participant ID
-        participant = i[:i.index('_')]
-        # check that folder contains a basecall file
-        if 'mito1_basecall.txt' in os.listdir(i):
-            file = i + '/' + 'mito1_basecall.txt'
-            # open file for reading
-            infile = open(file, 'r')
-            # skip header
-            infile.readline()
-            # loop over file, grab position, update with count
-            for line in infile:
-                line = line.rstrip()
-                if line != '':
-                    line = line.split('\t')
-                    position = int(line[1]) - 1
-                    # get read depth
-                    coverage = sum(list(map(lambda x: int(x), line[3:])))
-                    # do not consider positions with coverage <= minimum
-                    if coverage > minimum_coverage:
-                        # initialize set if key not in dict
-                        if position not in sample:
-                            sample[position] = set()
-                        # populate dict
-                        sample[position].add(participant)
-        # close file after reading
-        infile.close()
+        # set up boolean
+        ComputeSampleSize = False
+        # check that subfolder correspond to tissue type (normal or tumor)
+        if tissue_type == 'normal' and 'NT' in i:
+            ComputeSampleSize = True
+        elif tissue_type == 'tumor' and 'TP' in i:
+            ComputeSampleSize = True
+        # check that sample size can be recorded
+        if ComputeSampleSize == True:
+            # get participant ID
+            participant = i[:i.index('_')]
+            # check that folder contains a basecall file
+            if 'mito1_basecall.txt' in os.listdir(i):
+                file = i + '/' + 'mito1_basecall.txt'
+                # open file for reading
+                infile = open(file, 'r')
+                # skip header
+                infile.readline()
+                # loop over file, grab position, update with count
+                for line in infile:
+                    line = line.rstrip()
+                    if line != '':
+                        line = line.split('\t')
+                        position = int(line[1]) - 1
+                        # get read depth
+                        coverage = sum(list(map(lambda x: int(x), line[3:])))
+                        # do not consider positions with coverage <= minimum
+                        if coverage > minimum_coverage:
+                            # initialize set if key not in dict
+                            if position not in sample:
+                                sample[position] = set()
+                            # populate dict
+                            sample[position].add(participant)
+                # close file after reading
+                infile.close()
         
     return sample
             
@@ -683,11 +702,11 @@ def GetReadDepth(BaseCallFile):
 
 
 # use this function to compute the median read depth per individual
-def MedianReadDepthIndividual(folders):
+def MedianReadDepthIndividual(folders, tissue_type):
     '''
-    (str) -> dict
-    Loop over the Mitoseek output folders and compute the median read depth 
-    over all positions for each individual
+    (str, str) -> dict
+    Loop over the Mitoseek output folders for normal or tumor tissue_type
+    and compute the median read depth over all positions for each individual
     Precondition: Folders have been filtered to keep only non-redundant 
     individual mapped with GRCH37
     '''
@@ -696,18 +715,26 @@ def MedianReadDepthIndividual(folders):
     ReadDepth = {}
     # loop over subfolders
     for i in folders:
-        # get the participant ID
-        participant = i[:i.index('_')]
-        # check that folder contains a basecall file
-        if 'mito1_basecall.txt' in os.listdir(i):
-            # get the position-read depth for that participant
-            reads = GetReadDepth(i + '/mito1_basecall.txt')
-            # get the read counts
-            ReadCounts = [reads[j] for j in reads]
-            # median read counts
-            median_reads = np.median(ReadCounts)
-            # populate dict
-            ReadDepth[participant] = median_reads    
+        # Set up boolean to be updated if conditions are met
+        RecordIndividual = False
+        if tissue_type == 'tumor' and 'TP' in i:
+            RecordIndividual = True
+        elif tissue_type == 'normal' and 'NT' in i:
+            RecordIndividual = True
+        # check if conditions are met to record individual
+        if RecordIndividual == True:
+            # get the participant ID
+            participant = i[:i.index('_')]
+            # check that folder contains a basecall file
+            if 'mito1_basecall.txt' in os.listdir(i):
+                # get the position-read depth for that participant
+                reads = GetReadDepth(i + '/mito1_basecall.txt')
+                # get the read counts
+                ReadCounts = [reads[j] for j in reads]
+                # median read counts
+                median_reads = np.median(ReadCounts)
+                # populate dict
+                ReadDepth[participant] = median_reads    
     return ReadDepth
 
 

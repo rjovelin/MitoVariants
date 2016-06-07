@@ -55,7 +55,7 @@ print(len(folders))
 
 
 # create a dict {participant: median read depth}
-ReadDepth = MedianReadDepthIndividual(folders)
+ReadDepth = MedianReadDepthIndividual(folders, tissue)
 
 # get the set of blaclisted individuals
 blacklisted = BlackListed(BlacklistFile)
@@ -64,7 +64,7 @@ blacklisted = BlackListed(BlacklistFile)
 # this function already ignores duplicate individuals
 # and counts individuals with minimum read depth at given position
 sample_size = SampleSize('./', tissue, dataset, PositionReadDepth)
-print('positins with sample size', len(sample_size))
+print('positions with sample size', len(sample_size))
 # remove blaclisted individuals and individuals with too low read depth
 for position in sample_size:
     to_delete = set()
