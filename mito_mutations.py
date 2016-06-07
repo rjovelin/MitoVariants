@@ -101,7 +101,7 @@ def SampleSize(folder, tissue_type, dataset, minimum_coverage):
     elif dataset == 'RNA':
         # all individuals have been mapped using GRCH37
         # create a list of subdirectories
-        directories = os.listdir()
+        directories = os.listdir(folder)
         to_delete = []
         for i in directories:
             try:
@@ -118,37 +118,28 @@ def SampleSize(folder, tissue_type, dataset, minimum_coverage):
     for i in directories:
         # get participant ID
         participant = i[:i.index('_')]
-        # check if mitoseek was run on paired samples or on individual samples
-        if 'mito2_basecall.txt' in os.listdir(i):
-            # check if tissue type is normal or tumor
-            if tissue_type == 'normal':
-                file = i + '/' + 'mito2_basecall.txt'
-            elif tissue_type == 'tumor':
-                file = i + '/' + 'mito1_basecall.txt'
-        else:
-            # mitoseek was ran on a single sample
-            # normal or tumor is already specified by the folder
+        # check that folder contains a basecall file
+        if 'mito1_basecall.txt' in os.listdir(i):
             file = i + '/' + 'mito1_basecall.txt'
-        
-        # open file for reading
-        infile = open(file, 'r')
-        # skip header
-        infile.readline()
-        # loop over file, grab position, update with count
-        for line in infile:
-            line = line.rstrip()
-            if line != '':
-                line = line.split('\t')
-                position = int(line[1]) - 1
-                # get read depth
-                coverage = sum(list(map(lambda x: int(x), line[3:])))
-                # do not consider positions with coverage <= minimum
-                if coverage > minimum_coverage:
-                    # initialize set if key not in dict
-                    if position not in sample:
-                        sample[position] = set()
-                    # populate dict
-                    sample[position].add(participant)
+            # open file for reading
+            infile = open(file, 'r')
+            # skip header
+            infile.readline()
+            # loop over file, grab position, update with count
+            for line in infile:
+                line = line.rstrip()
+                if line != '':
+                    line = line.split('\t')
+                    position = int(line[1]) - 1
+                    # get read depth
+                    coverage = sum(list(map(lambda x: int(x), line[3:])))
+                    # do not consider positions with coverage <= minimum
+                    if coverage > minimum_coverage:
+                        # initialize set if key not in dict
+                        if position not in sample:
+                            sample[position] = set()
+                        # populate dict
+                        sample[position].add(participant)
         # close file after reading
         infile.close()
         
@@ -707,14 +698,16 @@ def MedianReadDepthIndividual(folders):
     for i in folders:
         # get the participant ID
         participant = i[:i.index('_')]
-        # get the position-read depth for that participant
-        reads = GetReadDepth(i + '/mito1_basecall.txt')
-        # get the read counts
-        ReadCounts = [reads[j] for j in reads]
-        # median read counts
-        median_reads = np.median(ReadCounts)
-        # populate dict
-        ReadDepth[participant] = median_reads    
+        # check that folder contains a basecall file
+        if 'mito1_basecall.txt' in os.listdir(i):
+            # get the position-read depth for that participant
+            reads = GetReadDepth(i + '/mito1_basecall.txt')
+            # get the read counts
+            ReadCounts = [reads[j] for j in reads]
+            # median read counts
+            median_reads = np.median(ReadCounts)
+            # populate dict
+            ReadDepth[participant] = median_reads    
     return ReadDepth
 
 
