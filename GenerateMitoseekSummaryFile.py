@@ -93,20 +93,22 @@ MitoVariants = {}
 # loop over each subfolder, get the variant info, add to the MitoVariants dict    
 for subfolder in folders:
     print(subfolder)
-    # mito1 is always the file for the tumor whether mitoseek was run with paired or individual samples
-    variants = GetIndividualTumorHeteroplasmies(subfolder + '/mito1_heteroplasmy.txt', sample_size, MT_annotation)
-    # update MitoVariants with variant info
-    for position in variants:
-        # compute the read coverage for the given position
-        reads = sum(list(map(lambda x: int(x), variants[position][11:19])))
-        assert type(reads) == int, 'sum of read counts should be an integer'
-        # do not consider blacklisted participant IDs and participants with median read depth <= minimum
-        # do not consider positions with read depth <= minimum
-        if variants[position][0] not in blacklisted and ReadDepth[variants[position][0]] > MinimumReadDepth and reads > PositionReadDepth:
-            if position in MitoVariants:
-                MitoVariants[position].append(variants[position])
-            else:
-                MitoVariants[position] = [variants[position]]
+    # check that heteroplasmy file is in subfolder
+    if 'mito1_heteroplasmy.txt' in os.listdir(subfolder):
+        # mito1 is always the file for the tumor whether mitoseek was run with paired or individual samples
+        variants = GetIndividualTumorHeteroplasmies(subfolder + '/mito1_heteroplasmy.txt', sample_size, MT_annotation)
+        # update MitoVariants with variant info
+        for position in variants:
+            # compute the read coverage for the given position
+            reads = sum(list(map(lambda x: int(x), variants[position][11:19])))
+            assert type(reads) == int, 'sum of read counts should be an integer'
+            # do not consider blacklisted participant IDs and participants with median read depth <= minimum
+            # do not consider positions with read depth <= minimum
+            if variants[position][0] not in blacklisted and ReadDepth[variants[position][0]] > MinimumReadDepth and reads > PositionReadDepth:
+                if position in MitoVariants:
+                    MitoVariants[position].append(variants[position])
+                else:
+                    MitoVariants[position] = [variants[position]]
 
 # open file for writing
 newfile = open(outputfile, 'w')
