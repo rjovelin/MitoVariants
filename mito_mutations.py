@@ -524,6 +524,12 @@ def RemoveUniqueParticipants(Participants_RNA, Participants_WGS):
     for ID in to_delete:
         del Participants_WGS[ID]
     
+    a = [i for i in Participants_RNA]
+    b = [i for i in Participants_WGS]
+    a.sort()
+    b.sort()
+    assert a == b, 'participant IDs are not the same'    
+    
     return Participants_RNA, Participants_WGS
 
 # use this function to remove positions with coverage < threshold
