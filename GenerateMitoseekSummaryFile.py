@@ -37,7 +37,7 @@ outputfile = 'HeteroplasmySummary_' + cancer + '_' + tissue + '_' + dataset + '.
 # check data sets, filter out individuals mapped to ref different than GRCH37 if WGS
 if dataset == 'WGS':
     # get the valid set of subfolders using only individuals with GRCH37 reference
-    folders = GetValidReference('./')
+    folders = GetValidReference('./', tissue)
 elif dataset == 'RNA':
     # bams were already selected with ref GRCH37
     folders = os.listdir('./')
