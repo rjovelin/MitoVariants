@@ -31,15 +31,8 @@ SummaryTumor = sys.argv[1]
 # get the Normal summary file
 SummaryNormal = sys.argv[2]
 # get the folder with mitoseek RNA outputs for normal sample
-NormalRNA_folder = sys.argv[3]
-# get the folder with mitoseek WGS outputs
-
-
-WGS_folder = sys.argv[4]
-# get the suffix
-suffix = sys.argv[5]
 # get the minimum read depth
-minimum_coverage = int(sys.argv[6])
+minimum_coverage = int(sys.argv[3])
 # get the outputfile name
 
 
@@ -50,56 +43,42 @@ minimum_coverage = int(sys.argv[6])
 # correct sample size at each position
 
 cancer_name = SummaryTumor[SummaryTumor.index('Summary_') + len('Summary_') : SummaryTumor.index('tumor') -1]
-assert cancer_name == SummaryNormal[SummaryNormal.index('Summary_') + len('Summary_') : SummaryNormal.index(tissue_type) -1], 'cancer names do not match'
-
+assert cancer_name == SummaryNormal[SummaryNormal.index('Summary_') + len('Summary_') : SummaryNormal.index('normal') -1], 'cancer names do not match'
 
 # verify that arguments are passed appropriately
-assert 'NT' in RNA_folder and 'NT' in WGS_folder, 'RNA and WGS folders should have the normal outputs'
-    assert 'normal' in SummaryRNA and 'normal' in SummaryDNA, 'summary files should be both for normal tissue'
-elif tissue_type == 'tumor':
-    assert 'TP' in RNA_folder and 'TP' in WGS_folder, 'RNA and WGS folders should have the tumor outputs'
-    assert 'tumor' in SummaryRNA and 'tumor' in SummaryDNA, 'summary files should be both for tumor tissue'
+assert 'tumor' in SummaryTumor and 'normal' in SummaryNormal, 'summary files should be tumor and normal'
 print('QCed files matching')
-
-
-
-
 
 # build outputfile with comand option arguments
 outputfile = 'HeteroplasmySummary_' + cancer_name + '_TumorScpecific.txt'
 
-
-
-
-
 # parse the summary files into a dict of dict {participantID: {position : [information]} 
 Tumor_snps = GetVariablePositions(SummaryTumor)
 Normal_snps = GetVariablePositions(SummaryNormal)
-print('RNA_snps', len(RNA_snps))
-print('DNA_snps', len(WGS_snps))
+print('Tumor_snps', len(Tumor_snps))
+print('Normal_snps', len(Normal_snps))
 
-# remove participants without RNA and WGS data
-RNA_snps, WGS_snps = RemoveUniqueParticipants(RNA_snps, WGS_snps)
-print('RNA_snps after removing unique participants', len(RNA_snps))
+# remove participants not in Tumor and Normal
+Tumor_snps, Normal_snps = RemoveUniqueParticipants(Tumor_snps, Normal_snps)
+print('N individuals in Tumor after removing unique participants', len(Tumor_snps))
 
 print(os.getcwd())
-# move to directory containing the subfolders of the mitoseek WGS outputs
-os.chdir(WGS_folder)
+# move to directory containing the subfolders of the mitoseek RNA Normal outputs
+os.chdir('NT_RNASeq/')
 print(os.getcwd())
 
-# remove positions with RNA variants that have no coverage in DNA
-RNA_snps = RemovePositionWithoutCoverage(RNA_snps, suffix, minimum_coverage)
-print('RNA_snps after removing positions without coverage', len(RNA_snps))
+# remove positions with RNA variants that have not enough coverage in Normal RNA
+Tumor_snps = RemovePositionWithoutCoverage(Tumor_snps, '_NT_RNASEQ', minimum_coverage)
+print('N individuals in Tumor after removing positions without sufficient coverage', len(Tumor_snps))
 
 # move to the directory containing the subfolders of the mitoseek RNA outputs
-os.chdir(RNA_folder)
+os.chdir('../TP_RNASeq/')
 print(os.getcwd())
-
 
 # correct sample size at each position
 # get the sample size of individuals with RNAseq and WGS that have minimum coverage in RNA at each position
 # make a list of subfolders from RNA mitoseek outputs
-RNASubFolders = [i for i in os.listdir(RNA_folder)]
+RNASubFolders = [i for i in os.listdir('./')]
 to_delete = []
 for i in RNASubFolders:
     try:
@@ -107,7 +86,7 @@ for i in RNASubFolders:
     except:
         to_delete.append(i)
     else:
-        if i[:i.index('_TP_RNASEQ')] not in RNA_snps:
+        if i[:i.index('_TP_RNASEQ')] not in Tumor_snps:
             to_delete.append(i)
 for i in to_delete:
     RNASubFolders.remove(i)
@@ -135,57 +114,46 @@ for subfolder in RNASubFolders:
                 sample[position] = sample.get(position, 0) + 1
     infile.close()
 # loop over participant
-for ID in RNA_snps:
+for ID in Tumor_snps:
     # loop over position
-    for position in RNA_snps[ID]:
+    for position in Tumor_snps[ID]:
         # get the sample size
-        RNA_snps[ID][position][11] = str(sample[position])
+        Tumor_snps[ID][position][11] = str(sample[position])
 
-
-# filter variants observed in DNA
-# loop over participants in RNA
-for participant in RNA_snps:
+# filter variants observed in Normal RNA from Tumor RNA variants
+# loop over participants in Tumor
+for participant in Tumor_snps:
     # create a list of positions to remove
     to_delete = []
     # loop over positions
-    for position in RNA_snps[participant]:
+    for position in Tumor_snps[participant]:
         # check if position is recorded in WGS
-        if position in WGS_snps[participant]:
-            # check filter strength
-            if RNAFilter == 'soft':
-                # remove positions for which variants are the same in RNA and DNA
-                # keep variable positions in DNA if alleles are different in RNA and DNA
-                rna_alleles = set(list(map(lambda x: x.upper(), RNA_snps[participant][position][7:9])))
-                dna_alleles = set(list(map(lambda x: x.upper(), WGS_snps[participant][position][7:9])))
-                if rna_alleles == dna_alleles:
-                    to_delete.append(position)
-            elif RNAFilter == 'hard':
-                # remove position
-                to_delete.append(position)
+        if position in Normal_snps[participant]:
+            # remove variable positions regardless of the variants themselves
+            to_delete.append(position)
+    print('delete {0} positions in {1}'.format(len(to_delete), participant))
     if len(to_delete) != 0:
         for position in to_delete:
-           del RNA_snps[participant][position]
+           del Tumor_snps[participant][position]
 
 # remove participants with no variants
-to_delete = []
-for i in RNA_snps:
-    if len(RNA_snps[i]) == 0:
-        to_delete.append(i)
+to_delete = [i for i in Tumor_snps if len(Tumor_snps[i]) == 0]
+print('delete {0} individuals'.format(len(to_delete)))
 for i in to_delete:
-    del RNA_snps[i]
-print('RNA_snps after filtering variants in DNA', len(RNA_snps))
+    del Tumor_snps[i]
+print('N individual in tumor after filtering variants in Normal', len(Tumor_snps))
 
 
 # create a dict with position as key and list of lists with info for all participants
 # {position : [[information_ID1], [information_ID2]}
 RNA_variants = {}
-for ID in RNA_snps:
+for ID in Tumor_snps:
     # get positions
-    for position in RNA_snps[ID]:
+    for position in Tumor_snps[ID]:
         if position in RNA_variants:
-            RNA_variants[position].append(RNA_snps[ID][position])
+            RNA_variants[position].append(Tumor_snps[ID][position])
         else:
-            RNA_variants[position] = [RNA_snps[ID][position]]
+            RNA_variants[position] = [Tumor_snps[ID][position]]
 # create a list of positions
 positions = [i for i in RNA_variants]
 positions.sort()
