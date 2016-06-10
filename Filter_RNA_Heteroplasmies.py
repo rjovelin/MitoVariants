@@ -14,7 +14,7 @@ from mito_mutations import *
 
 # usage python Filter_RNA_Heteroplasmies.py options
 # - RNA_summary_file: summary file with heteroplasmies in RNAs
-# - DNA_summary_file: sumary file with heteroplasmies in DNA
+# - DNA_summary_file: summary file with heteroplasmies in DNA
 # - RNA_folder: folder with RNA mitoseek outputs
 # - WGS_folder: folder with WGS mitoseek outputs
 # - suffix: suffix of the participant ID in the subfolder name
@@ -22,7 +22,7 @@ from mito_mutations import *
 #                Remove all variable positions in DNA (hard)
 #                Or remove variable positions in DNA if alleles are the same in RNA and DNA
 # - minimum_coverage: minimum read depth to keep positions               
-# - outputfile
+# - [tumor/normal]: tissue type, normal or tumor  
 
 
 # get the RNA summary file
@@ -39,9 +39,21 @@ suffix = sys.argv[5]
 RNAFilter = sys.argv[6]
 # get the minimum read depth
 minimum_coverage = int(sys.argv[7])
-# get the outputfile name
-outputfile = sys.argv[8]
+# get the tissue_type name
+tissue_type = sys.argv[8]
 
+
+# build outputfile with comand option arguments
+outputfile = 'HeteroplasmySummary_' + cancer_name + '_' + tissue_type + '_RNAOnly.txt'
+
+# verify that arguments are passed appropriately
+if tissue_type == 'normal':
+    assert 'NT' in RNA_folder and 'NT' in WGS_folder, 'RNA and WGS folders should have the normal outputs'
+    assert 'normal' in SummaryRNA and 'normal' in SummaryDNA, 'summary files should be both for normal tissue'
+elif tissue_type == 'tumor':
+    assert 'TP' in RNA_folder and 'TP' in WGS_folder, 'RNA and WGS folders should have the tumor outputs'
+    assert 'tumor' in SummaryRNA and 'tumor' in SummaryDNA, 'summary files should be both for tumor tissue'
+print('QCed files matching')
 
 # parse the summary files into a dict of dict {participantID: {position : [information]} 
 RNA_snps = GetVariablePositions(SummaryRNA)
