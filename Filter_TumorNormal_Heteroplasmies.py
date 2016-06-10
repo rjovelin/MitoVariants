@@ -16,7 +16,6 @@ from mito_mutations import *
 # - Tumor_RNAspecific_summary_file: summary file with RNA-specific heteroplasmies in tumor
 # - Normal_RNAspecific_summary_file: sumary file with RNA-specific heteroplasmies in normal
 
-### edit below
 
 
 
@@ -27,40 +26,55 @@ from mito_mutations import *
 # - outputfile
 
 
-# get the RNA summary file
-SummaryRNA = sys.argv[1]
-# get the DNA summary file
-SummaryDNA = sys.argv[2]
-# get the folder with mitoseek RNA outputs
-RNA_folder = sys.argv[3]
+# get the Tumor summary file
+SummaryTumor = sys.argv[1]
+# get the Normal summary file
+SummaryNormal = sys.argv[2]
+# get the folder with mitoseek RNA outputs for normal sample
+NormalRNA_folder = sys.argv[3]
 # get the folder with mitoseek WGS outputs
+
+
 WGS_folder = sys.argv[4]
 # get the suffix
 suffix = sys.argv[5]
-# get the strength of the RNA filter
-RNAFilter = sys.argv[6]
 # get the minimum read depth
-minimum_coverage = int(sys.argv[7])
+minimum_coverage = int(sys.argv[6])
 # get the outputfile name
-outputfile = sys.argv[8]
+
+
 
 # parse the summary files into a dict of dict {participantID: {position : [information]} 
 # remove participants without tumor and normal data
 # remove positions with RNA-tumor variants that have no coverage (or less than threshold) in normal-tumor
 # correct sample size at each position
 
+cancer_name = SummaryTumor[SummaryTumor.index('Summary_') + len('Summary_') : SummaryTumor.index('tumor') -1]
+assert cancer_name == SummaryNormal[SummaryNormal.index('Summary_') + len('Summary_') : SummaryNormal.index(tissue_type) -1], 'cancer names do not match'
 
-#### code below is based on filert RNA-DNA variants #################
-#### EDIT BELOW #####################################################
 
+# verify that arguments are passed appropriately
+assert 'NT' in RNA_folder and 'NT' in WGS_folder, 'RNA and WGS folders should have the normal outputs'
+    assert 'normal' in SummaryRNA and 'normal' in SummaryDNA, 'summary files should be both for normal tissue'
+elif tissue_type == 'tumor':
+    assert 'TP' in RNA_folder and 'TP' in WGS_folder, 'RNA and WGS folders should have the tumor outputs'
+    assert 'tumor' in SummaryRNA and 'tumor' in SummaryDNA, 'summary files should be both for tumor tissue'
+print('QCed files matching')
+
+
+
+
+
+# build outputfile with comand option arguments
+outputfile = 'HeteroplasmySummary_' + cancer_name + '_TumorScpecific.txt'
 
 
 
 
 
 # parse the summary files into a dict of dict {participantID: {position : [information]} 
-RNA_snps = GetVariablePositions(SummaryRNA)
-WGS_snps = GetVariablePositions(SummaryDNA)
+Tumor_snps = GetVariablePositions(SummaryTumor)
+Normal_snps = GetVariablePositions(SummaryNormal)
 print('RNA_snps', len(RNA_snps))
 print('DNA_snps', len(WGS_snps))
 
