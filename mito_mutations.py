@@ -107,7 +107,7 @@ def SampleSize(folder, tissue_type, dataset, minimum_coverage):
     
     # use only individuals mapped with GRCH37 ref    
     if dataset == 'WGS':
-        directories = GetValidReference(folder)
+        directories = GetValidReference(folder, tissue_type)
     elif dataset == 'RNA':
         # all individuals have been mapped using GRCH37
         # create a list of subdirectories
