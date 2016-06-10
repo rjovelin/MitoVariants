@@ -8,6 +8,8 @@ Created on Tue Mar  1 13:52:57 2016
 
 # use this function to filter out positions that are variable in RNAs and in DNA
 
+# place this script in the tumor name folder
+
 import os
 import sys
 from mito_mutations import *
@@ -15,8 +17,8 @@ from mito_mutations import *
 # usage python Filter_RNA_Heteroplasmies.py options
 # - RNA_summary_file: summary file with heteroplasmies in RNAs
 # - DNA_summary_file: summary file with heteroplasmies in DNA
-# - RNA_folder: folder with RNA mitoseek outputs
-# - WGS_folder: folder with WGS mitoseek outputs
+# - RNA_folder: path to folder with RNA mitoseek outputs
+# - WGS_folder: path to folder with WGS mitoseek outputs
 # - suffix: suffix of the participant ID in the subfolder name
 # - [soft/hard]: filter to compare variable positions in RNA and DNA.
 #                Remove all variable positions in DNA (hard)
@@ -43,8 +45,8 @@ minimum_coverage = int(sys.argv[7])
 tissue_type = sys.argv[8]
 
 
-# build outputfile with comand option arguments
-outputfile = 'HeteroplasmySummary_' + cancer_name + '_' + tissue_type + '_RNAOnly.txt'
+cancer_name = SummaryRNA[SummaryRNA.index('Summary_') + len('Summary_') : SummaryRNA.index(tissue_type) -1]
+assert cancer_name == SummaryDNA[SummaryDNA.index('Summary_') + len('Summary_') : SummaryDNA.index(tissue_type) -1], 'cancer names do not match'
 
 # verify that arguments are passed appropriately
 if tissue_type == 'normal':
@@ -54,6 +56,9 @@ elif tissue_type == 'tumor':
     assert 'TP' in RNA_folder and 'TP' in WGS_folder, 'RNA and WGS folders should have the tumor outputs'
     assert 'tumor' in SummaryRNA and 'tumor' in SummaryDNA, 'summary files should be both for tumor tissue'
 print('QCed files matching')
+
+# build outputfile with comand option arguments
+outputfile = 'HeteroplasmySummary_' + cancer_name + '_' + tissue_type + '_RNAOnly.txt'
 
 # parse the summary files into a dict of dict {participantID: {position : [information]} 
 RNA_snps = GetVariablePositions(SummaryRNA)
@@ -75,14 +80,14 @@ RNA_snps = RemovePositionWithoutCoverage(RNA_snps, suffix, minimum_coverage)
 print('RNA_snps after removing positions without coverage', len(RNA_snps))
 
 # move to the directory containing the subfolders of the mitoseek RNA outputs
-os.chdir(RNA_folder)
+os.chdir('../' + RNA_folder)
 print(os.getcwd())
 
 
 # correct sample size at each position
 # get the sample size of individuals with RNAseq and WGS that have minimum coverage in RNA at each position
 # make a list of subfolders from RNA mitoseek outputs
-RNASubFolders = [i for i in os.listdir(RNA_folder)]
+RNASubFolders = [i for i in os.listdir('./')]
 to_delete = []
 for i in RNASubFolders:
     try:
@@ -90,7 +95,10 @@ for i in RNASubFolders:
     except:
         to_delete.append(i)
     else:
-        if i[:i.index('_TP_RNASEQ')] not in RNA_snps:
+        # check tissue type
+        if tissue_type == 'tumor' and i[:i.index('_TP_RNASEQ')] not in RNA_snps:
+            to_delete.append(i)
+        elif tissue_type == 'normal' and i[:i.index('_NT_RNASEQ')] not in RNA_snps:
             to_delete.append(i)
 for i in to_delete:
     RNASubFolders.remove(i)
