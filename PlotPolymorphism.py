@@ -27,6 +27,7 @@ from mito_mutations import *
 # usage python3 Plot_Polymorphism.py [parameters]
 # - heteroplasmysummaryfile: file with heteroplasmic positions in the population sample
 # - threshold: the value above which PIC is considered (eg. threshold = 0 means 0 values won't be shown)
+# - [True/False] : whether sites with singleton variants are removed or not 
 # - [full/limited/black] : color panel: each gene has a different color (full) 
 #                        or proteins are in grey and tRNAs in red (limited)
 #                        or only tRNAs are labeled in red (black)
@@ -36,8 +37,13 @@ from mito_mutations import *
 HeteroSummaryFile = sys.argv[1]
 # get thresold from command
 threshold = float(sys.argv[2])
+RemoveSingleton = sys.argv[3]
+if RemoveSingleton == 'True':
+    RemoveSingleton = True
+elif RemoveSingleton == 'False':
+    RemoveSingleton = False
 # get the color panel to use
-colors = sys.argv[3]
+colors = sys.argv[4]
 
 # extract information about sample type from file name [normal/tumor/specific]
 # whether the sample is germline or tumor or SNPs are tumor-specific
@@ -112,7 +118,15 @@ fig = plt.figure(1, figsize = (4.3,2.56))
 ax = fig.add_subplot(1, 1, 1)  
 
 for i in positions:
-    if len(polymorphism[i]) != 0:
+    # set up boolean
+    RecordSite = False
+    if RemoveSingleton == True:
+        if len(polymorphism[i]) > 1:
+            RecordSite = True
+    elif RemoveSingleton == False:
+        if len(polymorphism[i]) != 0:
+            RecordSite = True
+    if RecordSite == True:
         # find the position of the variable site
         for gene in mito_genes:
             if i in mito_genes[gene]:
@@ -176,10 +190,13 @@ plt.tick_params(
     left = 'off',          
     labelbottom='off') # labels along the bottom edge are off  
   
+# build outputfile with parameters  
+if RemoveSingleton == True:
+    outputfile = 'Polymorphism' + cancer + sample + 'NoSingletons' + '.pdf' 
+elif RemoveSingleton == False:
+    outputfile = 'Polymorphism' + cancer + sample + '.pdf' 
   
-# build outputfile with parameters
-outputfile = 'Polymorphism' + cancer + sample + '.pdf' 
-  
+ 
 # save figure
 fig.savefig(outputfile, bbox_inches = 'tight')
 
