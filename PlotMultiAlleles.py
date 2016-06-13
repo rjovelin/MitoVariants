@@ -97,7 +97,7 @@ tick_pos = [i+(bar_width/2) for i in bar_left]
 plt.bar(bar_left, counts, width=bar_width, color= 'red')
 
 # set the x ticks with names
-plt.xticks(tick_pos, tumors, size = 12)
+plt.xticks(tick_pos, tumors, rotation = 20, ha = 'right', size = 12)
 
 #### need to edit the y ticks
 
