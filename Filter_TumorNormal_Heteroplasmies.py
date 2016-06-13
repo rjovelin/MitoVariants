@@ -15,15 +15,7 @@ from mito_mutations import *
 # usage python Filter_TumorNormal_Heteroplasmies.py options
 # - Tumor_RNAspecific_summary_file: summary file with RNA-specific heteroplasmies in tumor
 # - Normal_RNAspecific_summary_file: sumary file with RNA-specific heteroplasmies in normal
-
-
-
-
-# - RNA_folder: folder with RNA mitoseek outputs
-# - WGS_folder: folder with WGS mitoseek outputs
-# - suffix: suffix of the participant ID in the subfolder name
 # - minimum_coverage: minimum read depth to keep positions               
-# - outputfile
 
 
 # get the Tumor summary file
