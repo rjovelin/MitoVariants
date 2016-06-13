@@ -49,7 +49,10 @@ elif 'normal' in HeteroSummaryFile:
     sample = 'normal'
 
 # get cancer name from summary file
-cancer = HeteroSummaryFile[HeteroSummaryFile.index('_') + 1: HeteroSummaryFile.index('_' + sample)]
+if sample == 'specific':
+    cancer = HeteroSummaryFile[HeteroSummaryFile.index('_') + 1: HeteroSummaryFile.index('_TumorSpecific')]
+else:
+    cancer = HeteroSummaryFile[HeteroSummaryFile.index('_') + 1: HeteroSummaryFile.index('_' + sample)]
 
 # get the positions of each mitochiondrial gene
 mito_genes = MitoAnnotation('rCRS_genes_MT.text.txt')
