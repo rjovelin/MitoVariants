@@ -130,7 +130,7 @@ ax.set_ylim([0, 1])
 # set title
 if sample == 'normal':
     ax.set_title('{0} - Heteroplasmies in germline\n'.format(cancer), size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
-elif sample == 'cancer':
+elif sample == 'tumor':
     ax.set_title('{0} - Heteroplasmies in tumor\n'.format(cancer), size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
 elif sample == 'specific':
     ax.set_title('{0} - Tumor-specific heteroplasmies\n'.format(cancer), size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
