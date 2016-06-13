@@ -6,34 +6,51 @@ Created on Sun May  1 22:10:55 2016
 """
 
 
-# use this script to plot the proportions of SNPs with > 2 alleles for all tumors
+# use this script to plot the proportions of SNPs with > 2 alleles in tumor RNA variants
+
 
 # place this script in folder with heteroplasmy summary files
 
 # usage python3 PlotMultiAlleles.py [options]
 # - threshold: % reads to identifiy heteroplasmies
 # - [frequency/counts]: plot frequency or counts of mutational effects
-# - outputfile
+# - [specific/tumor]: consider tumor specific RNA variants (variable positions in normal are filtered)
+#                     or tumor RNA variants (include both tissue specific and tumor specific variants)
 
-import os
-import sys
+
+
+
+# import matplotlib and change api to use on server
+import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
-from matplotlib import patches as mpatches
+import matplotlib.patches as mpatches
+from matplotlib import rc
+rc('mathtext', default='regular')
+# import built in modules
+import sys
+import os
 import numpy as np
+# import custom modules
 from mito_mutations import *
 
 
-# make a list of summary files 
-files = [i for i in os.listdir() if 'RNAOnly' in i and '.txt' in i]
+
 
 # get threshold from command
-#threshold = int(sys.argv[1])
-#frequency = sys.argv[2]
-#outputfile = sys.argv[3]
+threshold = int(sys.argv[1])
+frequency = sys.argv[2]
+sample = sys.argv[3]
 
-outputfile = 'testfig.pdf'
-frequency = 'counts'
-threshold = 1
+
+# make a list of summary files 
+if sample == 'tumor':
+    files = [i for i in os.listdir() if 'RNAOnly' in i and '.txt' in i]
+elif sample == 'specific':
+    files = [i for i in os.listdir() if 'TumorSpecific' in i and '.txt' in i]
+
+#build outputfile
+outputfile = 'MultiAlleleVariants' + frequency.capitalize() + sample.capitalize() + 'Het' + str(threshold) + '.pdf'
 
 # create a dict {tumor: N multiallelic}
 multialleles = {}
