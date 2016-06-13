@@ -24,7 +24,7 @@ from mito_mutations import *
 
 # usage python3 PlotPolymCommonSNPs.py [parameters]
 # - threshold: the value above which PIC is considered (eg. threshold = 0 means 0 values won't be shown)
-# - [normal/cancer] whether the sample is germline or tumor 
+# - [tumor/specific]: RNA variants are in tumor or are tumor specific (filtered with normal) 
 # - [full/limited/black] : color panel: each gene has a different color (full) 
 #                        or proteins are in grey and tRNAs in red (limited)
 #                        or only tRNAs are labeled in red (black)
@@ -40,7 +40,10 @@ colors = sys.argv[3]
 
 
 # make a list of hetero summary files
-files = [i for i in os.listdir() if sample in i and 'RNAOnly' in i and '.txt' in i]
+if sample == 'tumor':
+    files = [i for i in os.listdir() if sample in i and 'RNAOnly' in i and '.txt' in i]
+elif sample == 'specific':
+    files = [i for i in os.listdir() if 'TumorSpecific' in i and '.txt' in i] 
 
 # create a set of common SNPs among tumor types
 commonsnps = CommonVariablePositions(files)
@@ -134,10 +137,10 @@ ax.set_xlim([0, 16570])
 ax.set_ylim([0, 1])
             
 # set title
-if sample == 'normal':
-    ax.set_title('Shared heteroplasmies in normal tissue\n', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
-elif sample == 'cancer':
+if sample == 'tumor':
     ax.set_title('Shared heteroplasmies across tumor types\n', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
+elif sample == 'specific':
+    ax.set_title('Shared tumor-specific heteroplasmies\n', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
 
 # set y axis label
 ax.set_ylabel('Polymorphism Information Content', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
