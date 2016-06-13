@@ -42,7 +42,7 @@ assert 'tumor' in SummaryTumor and 'normal' in SummaryNormal, 'summary files sho
 print('QCed files matching')
 
 # build outputfile with comand option arguments
-outputfile = 'HeteroplasmySummary_' + cancer_name + '_TumorScpecific.txt'
+outputfile = 'HeteroplasmySummary_' + cancer_name + '_TumorSpecific.txt'
 
 # parse the summary files into a dict of dict {participantID: {position : [information]} 
 Tumor_snps = GetVariablePositions(SummaryTumor)
