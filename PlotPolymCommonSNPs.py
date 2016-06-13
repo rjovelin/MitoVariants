@@ -180,7 +180,7 @@ plt.tick_params(
   
   
 # build outputfile with parameters
-outputfile = 'SharedPolymorphism' + sample.capitalize() + 'Het' + str(threshold) + '.pdf' 
+outputfile = 'SharedPolymorphism' + sample.capitalize() + '.pdf' 
   
 # save figure
 fig.savefig(outputfile, bbox_inches = 'tight')
