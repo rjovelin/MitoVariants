@@ -12,40 +12,42 @@ Created on Sun May  1 08:02:51 2016
 # usage python3 PlotFreqFunctionalEffect.py [options]
 # - [singlefile/allfiles]: whether a single summary file or multiple summary files
 # - [frequency/counts]: plot frequency or counts of mutational effects
-# -tumor: summary file of tumor if singlefile is used
-# - outputfile
+# - [tumor/specific]: whether RNA variants are in tumor or are tumor specific (filtered based on normale)
+# - [mutations/sites] : count the number of mutations or the number of variable sites
+# - HeteroplasmySummaryFile: summary file of tumor if singlefile is used
 
-import os
-import sys
+# import matplotlib and change api to use on server
+import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
-from matplotlib import patches as mpatches
+import matplotlib.patches as mpatches
+from matplotlib import rc
+rc('mathtext', default='regular')
+# import built in modules
+import sys
+import os
 import numpy as np
+# import custom modules
 from mito_mutations import *
 
-
-# make a list of summary files 
-files = [i for i in os.listdir() if 'RNAOnly' in i and '.txt' in i]
-
-##use single of all summary files
-#which_files = sys.argv[1]
-#datatype = sys.argv[2] 
-#if which_files == 'singlefile':
-#    # get tumor from command
-#    tumor = sys.argv[3]
-#    # create a 1 item list with the summary file
-#    for filename in files:
-#        if tumor in filename:
-#            break
-#    files = [filename]
-#    outputfile = sys.argv[4]
-#elif which_files == 'allfiles':
-#    outputfile = sys.argv[3]    
+#use single of all summary files
+which_files = sys.argv[1]
+datatype = sys.argv[2] 
+sample = sys.argv[3]
+Sites = sys.argv[4]
 
 
-outputfile = 'testfig.pdf'
-Sites = 'mutations'
-frequency = 'frequency'
-which_files = 'allfiles'
+if sample == 'tumor':
+    # make a list of summary files 
+    files = [i for i in os.listdir() if 'tumor_RNAOnly' in i and '.txt' in i]
+elif sample == 'specific':
+    # make a list of summary files 
+    files = [i for i in os.listdir() if 'TumorSpecific' in i and '.txt' in i]
+    
+if which_files == 'singlefile':
+    # get tumor from command
+    HeteroplasmySummaryFile = sys.argv[5]
+    files = [filename]
 
 # create a dict {mutation: [list of positions]}
 mutations = {}
@@ -64,10 +66,14 @@ for filename in files:
         else:
             mutations[effect] = positions
             
+for i in mutations:
+    print(i, len(mutations[i]))            
+            
+          
 # make a list of mutation names sorted by count
 name_counts = []
 for i in mutations:
-    if i in ['DLoop', 'non-synonymous', 'stoploss', 'stopgain', 'synonymous', 'NonCoding', 'tRNA']:
+    if i in ['DLoop', 'non-synonymous', 'stoploss', 'stopgain', 'synonymous', 'NonCoding', 'tRNA', 'Ribosomal']:
         if i == 'non-synonymous':
             name_counts.append([len(mutations[i]), 'NonSyn'])
         elif i == 'synonymous':
@@ -87,6 +93,8 @@ counts = [i[0] for i in name_counts]
 print(categories)
 print(counts)
 
+colorscheme = ['#8dd3c7','#ffffb3','#bebada','#fb8072','#80b1d3','#fdb462','#b3de69','#fccde5']
+
 # create figure
 fig = plt.figure(1, figsize = (4.3,2.56))
 
@@ -102,25 +110,24 @@ bar_left = [i for i in range(len(counts))]
 tick_pos = [i+(bar_width/2) for i in bar_left]
 
 # Create a bar plot, in position bar_left for counts
-plt.bar(bar_left, counts, width=bar_width, color= 'red')
+plt.bar(bar_left, counts, width=bar_width, color= colorscheme)
 
 # set the x ticks with names
-plt.xticks(tick_pos, categories, size = 12)
+plt.xticks(tick_pos, categories, ha = 'right', rotation = 20, size = 12)
 
-#### need to edit the y ticks
 
-if frequency == 'frequency':
+if datatype == 'frequency':
     # count total number of mutations
     total = sum(counts)
     print(total)
     # set the y ticks
     counts = list(map(lambda x: x / total, counts))
-    plt.yticks([i/100 for i in range(0, 125, 25)], [0, 0.25, 0.50, 0.75, 1])
+    #plt.yticks([i/100 for i in range(0, 125, 25)], [0, 0.25, 0.50, 0.75, 1])
 
 # set axis labels
-if frequency == 'frequency':
+if datatype == 'frequency':
     plt.ylabel('Proportion of mutations', size = 12, ha = 'center', fontname = 'Helvetica', family = 'sans-serif', color = 'black')
-elif frequency == 'counts':
+elif datatype == 'counts':
     plt.ylabel('Number of mutations', size = 12, ha = 'center', fontname = 'Helvetica', family = 'sans-serif', color = 'black')
 
 plt.xlabel('Mutational effect', size = 12, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
@@ -143,9 +150,15 @@ ax.spines["right"].set_visible(False)
 ax.spines["left"].set_visible(False)      
 
 if which_files == 'singlefile':
-    plt.title(tumor, size = 12)
+    if sample == 'tumor':
+        plt.title('RNA variants in {0}'.format(tumor), size = 12)
+    elif sample == 'specific':
+        plt.title('Tumor-specific RNA variants in {0}'.format(tumor), size = 12)
 elif which_files == 'allfiles':
-    plt.title('All tumor types', size = 12)
+    if sample == 'tumor':
+        plt.title('RNA variants across all tumor types', size = 12)
+    elif sample == 'specific':
+        plt.title('Tumor-specific RNA variants in LIRI and RECA', size = 12)
 
 plt.tick_params(
     axis='both',       # changes apply to the x-axis and y-axis (other option : x, y)
@@ -158,6 +171,18 @@ plt.tick_params(
     colors = 'black'
     )  
 
-# save figure
-fig.savefig(outputfile, bbox_inches = 'tight')
+if which_files == 'singlefile':
+    # extract the cancer name
+    if sample == 'tumor':
+        cancer = HeteroSummaryFile[HeteroSummaryFile.index('_') + 1: HeteroSummaryFile.index('_' + sample)]
+    elif sample == 'specific':
+        cancer = HeteroSummaryFile[HeteroSummaryFile.index('_') + 1: HeteroSummaryFile.index('_TumorSpecific')]
+           
+# build outputfile with parameters  
+if which_files == 'singlefile':
+    outputfile = 'MutationalEffect' + cancer + sample.capitalize() + datatype.capitalize() + '.pdf' 
+elif which_files == 'allfiles':
+    outputfile = 'MutationalEffect' + sample.capitalize() + datatype.capitalize() + Sites.capitalize() + '.pdf' 
     
+# save figure
+fig.savefig(outputfile, bbox_inches = 'tight')    
