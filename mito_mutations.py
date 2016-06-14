@@ -1010,8 +1010,8 @@ def MutationalEffect(HeteroSummaryFile, Sites = 'mutations'):
                 effect = 'DLoop'
             elif line[2] == 'NonCoding':
                 effect = 'NonCoding'
-            elif line[2] == 'NA':
-                effect = 'NA'
+            elif line[2] in ('RNR1', 'RNR2'):
+                effect = 'Ribosomal'
             else:
                 effect = line[4]
             # populate dict
