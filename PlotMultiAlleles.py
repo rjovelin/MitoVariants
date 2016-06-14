@@ -93,6 +93,14 @@ bar_left = [i for i in range(len(counts))]
 # set positions of the x-axis ticks (center of the bars as bar labels)
 tick_pos = [i+(bar_width/2) for i in bar_left]
 
+if frequency == 'frequency':
+    # count total number of mutations
+    total = sum(counts)
+    print(total)
+    # set the y ticks
+    counts = list(map(lambda x: x / total, counts))
+#    plt.yticks([i/100 for i in range(0, 125, 25)], [0, 0.25, 0.50, 0.75, 1])
+
 # Create a bar plot, in position bar_left for counts
 plt.bar(bar_left, counts, width=bar_width, color= 'red')
 
@@ -101,13 +109,6 @@ plt.xticks(tick_pos, tumors, rotation = 20, ha = 'right', size = 12)
 
 #### need to edit the y ticks
 
-if frequency == 'frequency':
-    # count total number of mutations
-    total = sum(counts)
-    print(total)
-    # set the y ticks
-    counts = list(map(lambda x: x / total, counts))
-    plt.yticks([i/100 for i in range(0, 125, 25)], [0, 0.25, 0.50, 0.75, 1])
 
 # set axis labels
 if frequency == 'frequency':
