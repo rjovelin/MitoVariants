@@ -11,9 +11,7 @@ Created on Mon May  2 12:52:51 2016
 
 # usage python3 PlotAlleleFrequencyFunction.py [options]
 # - [singlefile/allfiles]: whether a single summary file or multiple summary files
-# - [frequency/counts]: plot frequency or counts of mutational effects
 # - [tumor/specific]: whether RNA variants are in tumor or are tumor specific (filtered based on normale)
-# - [mutations/sites] : count the number of mutations or the number of variable sites
 # - HeteroplasmySummaryFile: summary file of tumor if singlefile is used
 
 # import matplotlib and change api to use on server
@@ -32,23 +30,19 @@ from mito_mutations import *
 
 #use single of all summary files
 which_files = sys.argv[1]
-datatype = sys.argv[2] 
-sample = sys.argv[3]
-Sites = sys.argv[4]
+sample = sys.argv[2]
 
-if sample == 'tumor':
+
+if which_files == 'allfiles' and sample == 'tumor':
     # make a list of summary files 
     files = [i for i in os.listdir() if 'tumor_RNAOnly' in i and '.txt' in i]
-elif sample == 'specific':
+elif which_files == 'allfiles' and sample == 'specific':
     # make a list of summary files 
     files = [i for i in os.listdir() if 'TumorSpecific' in i and '.txt' in i]
-    
-if which_files == 'singlefile':
+elif which_files == 'singlefile':
     # get tumor from command
-    HeteroplasmySummaryFile = sys.argv[5]
-    files = [filename]
-
-
+    files = [sys.argv[3]]
+    
 # create a dict {mutation: [list of allele frequencies]}
 mutations = {}
 
@@ -76,7 +70,8 @@ for effect in mutations:
 categories = [i for i in mutations]
 data = [mutations[i] for i in categories]
 print(len(data), len(categories))
-
+for i in categories:
+    print(i)
 
 ## create figure
 #fig = plt.figure(1, figsize = (3.5, 2.5))
