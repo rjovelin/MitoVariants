@@ -1039,13 +1039,9 @@ def ComputeAlleleFrequency(HeteroSummaryFile):
     functional category : list of allele frequencies values pairs
     '''
     
-    # create a dict {mutation_type : [positions]}
+    # create a dict {mutation_type : [frequencies]}
     MutationTypes = {}
-    
-    # create a variable to be updated at each new position
-    SNPPos = ''   
-    # initialize lists
-    sample_size = []  
+    # create a dict of dicts with {position : mutation_type: [[alleles], sample_size]}
     MinorAlleles = {}
     
     infile = open(HeteroSummaryFile)
@@ -1069,41 +1065,38 @@ def ComputeAlleleFrequency(HeteroSummaryFile):
                     effect = line[4]
             # get position 0-based, positions are ordered in summary file
             position = int(line[0]) - 1
-            # check if reading variant at same position
-            if position == SNPPos:
-                # looking at the same position
-                # add sample size to list
-                sample_size.append(int(line[11]))
-                # grab the minor alleles for given functional category
-                if effect in MinorAlleles:
-                    MinorAlleles[effect].append(line[8])
+            sample_size = int(line[11]) 
+            if position in MinorAlleles:
+                # check if effect in inner dict
+                if effect in MinorAlleles[position]:
+                    # add base to list
+                    MinorAlleles[position][effect][0].append(line[8])
+                    # check that sample size is the same for a given position
+                    assert MinorAlleles[position][effect][1] == sample_size, 'sample size should be the same for a given position'
                 else:
-                    MinorAlleles[effect] = [line[8]]
-            elif position != SNPPos:
-                # found a new variable sites, check if start or file or not
-                if SNPPos != '':
-                    # update dict before going further
-                    for effect in MinorAlleles:
-                        # loop over minor alleles for that effect at that position
-                        minors = set(MinorAlleles[effect])
-                        assert len(set(sample_size)) == 1, 'more than a single sample size'
-                        for base in minors:
-                            # get frequency of each minor allele
-                            Freq = MinorAlleles[effect].count(base) / list(set(sample_size))[0]
-                            if effect in MutationTypes:
-                                MutationTypes[effect].append(Freq)
-                            else:
-                                MutationTypes[effect] = [Freq]
-                # initialize variables for new site
-                sample_size = [int(line[11])]
-                MinorAlleles = {}
-                MinorAlleles[effect] = [line[8]]
-                SNPPos = position
+                    # initialize list
+                    MinorAlleles[position][effect] = [[line[8]], sample_size]
+            else:
+                # initialize inner dict
+                MinorAlleles[position] = {}
+                # initialize list
+                MinorAlleles[position][effect] = [[line[8]], sample_size]
+            
+    infile.close()    
     
-    infile.close()
+    # check that a single functional category corresponds to each given position
+    for position in MinorAlleles:
+        assert len(MinorAlleles[position]) == 1, 'more than 1 functional category for the same position'
+        for effect in MinorAlleles[position]:
+            # get the frequency of each base
+            minors = set(MinorAlleles[position][effect][0])
+            # get the frequency of each allele
+            for base in minors:
+                Freq = MinorAlleles[position][effect][0].count(base) / MinorAlleles[position][effect][1]
+                if effect in MutationTypes:
+                    MutationTypes[effect].append(Freq)
+                else:
+                    MutationTypes[effect] = [Freq]
+        
     return MutationTypes
-    
-    
-    
-    
     

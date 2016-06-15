@@ -43,6 +43,9 @@ elif which_files == 'singlefile':
     # get tumor from command
     files = [sys.argv[3]]
     
+print(files)    
+    
+    
 # create a dict {mutation: [list of allele frequencies]}
 mutations = {}
 
@@ -66,40 +69,45 @@ for filename in files:
 for effect in mutations:
     mutations[effect].sort()
 
-# make parallel lists with functional effects and frequency values
-categories = [i for i in mutations]
-data = [mutations[i] for i in categories]
-
-# replace category names, keeping the same orders between names and data
-for i in range(len(categories)):
-    if categories[i] == 'stopgain':
-        categories[i] = 'PSC'
-    elif categories[i] == 'stoploss':
-        categories[i] = 'SCL'
-    elif categories[i] == 'non-synonymous':
-        categories[i] = 'NonSyn'
-    elif categories[i] == 'synonymous':
-        categories[i] = 'Syn'
+# make list with functional category and data
+Data = [[key, val] for key, val in mutations.items()]
+# replace some functional categories with a shorter name
+for i in range(len(Data)):
+    if Data[i][0] == 'stopgain':
+        Data[i][0] = 'PSC'
+    elif Data[i][0] == 'stoploss':
+        Data[i][0] = 'SCL'
+    elif Data[i][0] == 'non-synonymous':
+        Data[i][0] = 'NonSyn'
+    elif Data[i][0] == 'synonymous':
+        Data[i][0] = 'Syn'
     # keep the same name for the other categories (tRNA, DLoop, NonCoding, Ribosomal)
 
-print(len(data), len(categories))
-for i in categories:
-    print(i)
+# sort according to names
+Data.sort()
+
+# create parallel lists with functional names and data
+categories = [Data[i][0] for i in range(len(Data))]
+data = [Data[i][1] for i in range(len(Data))]    
+print(categories)
+
 
 # create figure
 fig = plt.figure(1, figsize = (3.5, 2.5))
 # add a plot to figure (1 row, 1 column, 1 plot)
 ax = fig.add_subplot(1, 1, 1)  
 
-graph1 = ax.step(data[0], np.linspace(0, 1, len(data[0]), endpoint=False), linewidth = 1.2, color = '#8dd3c7', alpha = 0.7)
-graph2 = ax.step(data[1], np.linspace(0, 1, len(data[1]), endpoint=False), linewidth = 1.2, color = '#ffffb3', alpha = 0.7)
-graph3 = ax.step(data[2], np.linspace(0, 1, len(data[2]), endpoint=False), linewidth = 1.2, color = '#bebada', alpha = 0.7)
-graph4 = ax.step(data[3], np.linspace(0, 1, len(data[3]), endpoint=False), linewidth = 1.2, color = '#fb8072', alpha = 0.7)
-graph5 = ax.step(data[4], np.linspace(0, 1, len(data[4]), endpoint=False), linewidth = 1.2, color = '#80b1d3', alpha = 0.7)
-graph6 = ax.step(data[5], np.linspace(0, 1, len(data[5]), endpoint=False), linewidth = 1.2, color = '#fdb462', alpha = 0.7)
-graph7 = ax.step(data[6], np.linspace(0, 1, len(data[6]), endpoint=False), linewidth = 1.2, color = '#b3de69', alpha = 0.7)
-graph8 = ax.step(data[7], np.linspace(0, 1, len(data[7]), endpoint=False), linewidth = 1.2, color = '#fccde5', alpha = 0.7)
+# create a list to store the variables for building the legend
+Graphs = []
 
+# make a list of colors
+colorscheme = ['#8dd3c7','#ffffb3','#bebada','#fb8072','#80b1d3','#fdb462','#b3de69','#fccde5']
+
+# loop over categories
+for i in range(len(categories)):
+    print(categories[i])
+    graph = ax.step(data[i], np.linspace(0, 1, len(data[i]), endpoint=True), linewidth = 1.2, color = colorscheme[i], alpha = 0.7)
+    Graphs.append(graph)
 print('plotted CDF')
 
 # add label for the Y axis
@@ -151,9 +159,12 @@ for label in ax.get_yticklabels():
     label.set_fontname('Arial')
 
 # add lines
-lns = graph1+graph2+graph3+graph4+graph5+graph6+graph7+graph8
+lns = Graphs[0]
+for i in range(1, len(Graphs)):
+    lns = lns + Graphs[i]
 # get labels
 labs = [categories[i] for i in range(len(categories))]
+print(labs)
 # plot legend
 ax.legend(lns, labs, loc=4, fontsize = 6, frameon = False)
 
