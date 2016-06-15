@@ -1030,34 +1030,24 @@ def MutationalEffect(HeteroSummaryFile, Sites = 'mutations'):
     elif Sites == 'mutations':
         return MutationTypes
     
-############################## edit below
 
-
-# use this function to compute the MAF for various SNP functional categories
-def ComputeMAFFunction(HeteroSummaryFile):
+# use this function to compute the allele frequency for various SNP functional categories
+def ComputeAlleleFrequency(HeteroSummaryFile):
     '''
     (file) -> dict
     Take the file with heteroplasmy summary and return a dict with SNP
-    functional category : list of MAF values pairs
+    functional category : list of allele frequencies values pairs
     '''
     
     # create a dict {mutation_type : [positions]}
     MutationTypes = {}
     
-    
-    # loop over file
-    
-    # get position
-    # get the minor alleles at that position
-    # count the number of individuals for each minor allele
-    # get functional effect
-    # get total number of individual at that position
-    # MAF <- divide number of ind / total 
-    # record MAF     
-    
-    # create a variable to be updarted at each new position
+    # create a variable to be updated at each new position
     SNPPos = ''   
-        
+    # initialize lists
+    sample_size = []  
+    MinorAlleles = {}
+    
     infile = open(HeteroSummaryFile)
     infile.readline()
     for line in infile:
@@ -1071,10 +1061,12 @@ def ComputeMAFFunction(HeteroSummaryFile):
                 effect = 'DLoop'
             elif line[2] == 'NonCoding':
                 effect = 'NonCoding'
-            elif line[2] == 'NA':
-                effect = 'NA'
+            elif line[2] in ('RNR1', 'RNR2'):
+                effect = 'Ribosomal'
             else:
-                effect = line[4]
+                # do not consider the few positions not synonymous and nonsynonymous
+                if '|' not in line[4]:
+                    effect = line[4]
             # get position 0-based, positions are ordered in summary file
             position = int(line[0]) - 1
             # check if reading variant at same position
@@ -1094,13 +1086,14 @@ def ComputeMAFFunction(HeteroSummaryFile):
                     for effect in MinorAlleles:
                         # loop over minor alleles for that effect at that position
                         minors = set(MinorAlleles[effect])
+                        assert len(set(sample_size)) == 1, 'more than a single sample size'
                         for base in minors:
-                            # get MAF of each minor allele
-                            MAF = MinorAlleles[effect].count(base) / (sum(sample_size) / len(sample_size))
+                            # get frequency of each minor allele
+                            Freq = MinorAlleles[effect].count(base) / list(set(sample_size))[0]
                             if effect in MutationTypes:
-                                MutationTypes[effect].append(MAF)
+                                MutationTypes[effect].append(Freq)
                             else:
-                                MutationTypes[effect] = [MAF]
+                                MutationTypes[effect] = [Freq]
                 # initialize variables for new site
                 sample_size = [int(line[11])]
                 MinorAlleles = {}
