@@ -49,20 +49,13 @@ if which_files == 'singlefile':
     files = [filename]
 
 
-
-#################### CONTINUE HERE
-
-
-
-
-
 # create a dict {mutation: [list of positions]}
 mutations = {}
 
 # loop over filename in files
 for filename in files:
     # create a dict {mutation: [list of positions]}
-    snpeffect = ComputeMAFFunction(filename)
+    snpeffect = ComputeAlleleFrequency(filename)
     # populate mutation dict
     for effect in snpeffect:
         # copy list of frequencies
