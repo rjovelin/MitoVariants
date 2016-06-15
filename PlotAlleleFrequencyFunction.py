@@ -69,78 +69,104 @@ for effect in mutations:
 # make parallel lists with functional effects and frequency values
 categories = [i for i in mutations]
 data = [mutations[i] for i in categories]
+
+# replace category names, keeping the same orders between names and data
+for i in range(len(categories)):
+    if categories[i] == 'stopgain':
+        categories[i] = 'PSC'
+    elif categories[i] == 'stoploss':
+        categories[i] = 'SCL'
+    elif categories[i] == 'non-synonymous':
+        categories[i] = 'NonSyn'
+    elif categories[i] == 'synonymous':
+        categories[i] = 'Syn'
+    # keep the same name for the other categories (tRNA, DLoop, NonCoding, Ribosomal)
+
 print(len(data), len(categories))
 for i in categories:
     print(i)
 
-## create figure
-#fig = plt.figure(1, figsize = (3.5, 2.5))
-## add a plot to figure (1 row, 1 column, 1 plot)
-#ax = fig.add_subplot(1, 1, 1)  
-#
-## plot MAF synonymous sites
-#graph1 = ax.step(MAF_SYN, np.linspace(0, 1, len(MAF_SYN), endpoint=False), linewidth = 1.2, color = '#33a02c', alpha = 0.7)
-## plot MAF replacement sites
-#graph2 = ax.step(MAF_REP, np.linspace(0, 1, len(MAF_REP), endpoint=False), linewidth = 1.2, color = '#b2df8a', alpha = 0.7)
-## plot MAF miRNAs
-#graph3 = ax.step(MAF_mirna, np.linspace(0, 1, len(MAF_mirna), endpoint=False), linewidth = 1.2, color = '#1f78b4', alpha = 0.7)
-## plot MAF targets
-#graph4 = ax.step(MAF_targets, np.linspace(0, 1, len(MAF_targets), endpoint=False), linewidth = 1.2, color = '#a6cee3', alpha = 0.7)
-#print('plotted CDF')
-#
-## add label for the Y axis
-#ax.set_ylabel('Proportion of SNPs', size = 10, ha = 'center', fontname = 'Arial')
-## set x axis label
-#ax.set_xlabel('Minor Allele Frequency', size = 10, ha = 'center', fontname = 'Arial')
-#
-## do not show lines around figure, keep bottow line  
-#ax.spines["top"].set_visible(False)    
-#ax.spines["bottom"].set_visible(True)    
-#ax.spines["right"].set_visible(False)    
-#ax.spines["left"].set_visible(False)      
-## offset the spines
-#for spine in ax.spines.values():
-#  spine.set_position(('outward', 5))
-#
-## add a light grey horizontal grid to the plot, semi-transparent, 
-#ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5, linewidth = 0.5)  
-## hide these grids behind plot objects
-#ax.set_axisbelow(True)
-#
-## do not show ticks on 1st graph
-#ax.tick_params(
-#    axis='x',       # changes apply to the x-axis and y-axis (other option : x, y)
-#    which='both',      # both major and minor ticks are affected
-#    bottom='on',      # ticks along the bottom edge are off
-#    top='off',         # ticks along the top edge are off
-#    right = 'off',
-#    left = 'off',          
-#    labelbottom='on', # labels along the bottom edge are off 
-#    colors = 'black',
-#    labelsize = 10,
-#    direction = 'out') # ticks are outside the frame when bottom = 'on
-#
-## do not show ticks
-#ax.tick_params(
-#    axis='y',       # changes apply to the x-axis and y-axis (other option : x, y)
-#    which='both',      # both major and minor ticks are affected
-#    bottom='off',      # ticks along the bottom edge are off
-#    top='off',         # ticks along the top edge are off
-#    right = 'off',
-#    left = 'off',          
-#    labelbottom='off', # labels along the bottom edge are off 
-#    colors = 'black',
-#    labelsize = 10,
-#    direction = 'out') # ticks are outside the frame when bottom = 'on
-#
-#for label in ax.get_yticklabels():
-#    label.set_fontname('Arial')
-#
-## add lines
-#lns = graph1+graph2+graph3+graph4
-## get labels
-#labs = ['Synonymous', 'Replacement', 'miRNAs', 'targets']
-## plot legend
-#ax.legend(lns, labs, loc=2, fontsize = 8, frameon = False)
-#
-#fig.savefig('testfile.pdf.pdf', bbox_inches = 'tight')
+# create figure
+fig = plt.figure(1, figsize = (3.5, 2.5))
+# add a plot to figure (1 row, 1 column, 1 plot)
+ax = fig.add_subplot(1, 1, 1)  
+
+graph1 = ax.step(data[0], np.linspace(0, 1, len(data[0]), endpoint=False), linewidth = 1.2, color = '#8dd3c7', alpha = 0.7)
+graph2 = ax.step(data[1], np.linspace(0, 1, len(data[1]), endpoint=False), linewidth = 1.2, color = '#ffffb3', alpha = 0.7)
+graph3 = ax.step(data[2], np.linspace(0, 1, len(data[2]), endpoint=False), linewidth = 1.2, color = '#bebada', alpha = 0.7)
+graph4 = ax.step(data[3], np.linspace(0, 1, len(datap[3]), endpoint=False), linewidth = 1.2, color = '#fb8072', alpha = 0.7)
+graph5 = ax.step(data[4], np.linspace(0, 1, len(data[4]), endpoint=False), linewidth = 1.2, color = '#80b1d3', alpha = 0.7)
+graph6 = ax.step(data[5], np.linspace(0, 1, len(data[5]), endpoint=False), linewidth = 1.2, color = '#fdb462', alpha = 0.7)
+graph7 = ax.step(data[6], np.linspace(0, 1, len(data[6]), endpoint=False), linewidth = 1.2, color = '#b3de69', alpha = 0.7)
+graph8 = ax.step(data[7], np.linspace(0, 1, len(data[7]), endpoint=False), linewidth = 1.2, color = '#fccde5', alpha = 0.7)
+
+print('plotted CDF')
+
+# add label for the Y axis
+ax.set_ylabel('Cumulative fraction of mutations', size = 10, ha = 'center', fontname = 'Arial')
+# set x axis label
+ax.set_xlabel('Allele Frequency', size = 10, ha = 'center', fontname = 'Arial')
+
+# do not show lines around figure, keep bottow line  
+ax.spines["top"].set_visible(False)    
+ax.spines["bottom"].set_visible(True)    
+ax.spines["right"].set_visible(False)    
+ax.spines["left"].set_visible(False)      
+# offset the spines
+for spine in ax.spines.values():
+  spine.set_position(('outward', 5))
+
+# add a light grey horizontal grid to the plot, semi-transparent, 
+ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5, linewidth = 0.5)  
+# hide these grids behind plot objects
+ax.set_axisbelow(True)
+
+# do not show ticks on 1st graph
+ax.tick_params(
+    axis='x',       # changes apply to the x-axis and y-axis (other option : x, y)
+    which='both',      # both major and minor ticks are affected
+    bottom='on',      # ticks along the bottom edge are off
+    top='off',         # ticks along the top edge are off
+    right = 'off',
+    left = 'off',          
+    labelbottom='on', # labels along the bottom edge are off 
+    colors = 'black',
+    labelsize = 10,
+    direction = 'out') # ticks are outside the frame when bottom = 'on
+
+# do not show ticks
+ax.tick_params(
+    axis='y',       # changes apply to the x-axis and y-axis (other option : x, y)
+    which='both',      # both major and minor ticks are affected
+    bottom='off',      # ticks along the bottom edge are off
+    top='off',         # ticks along the top edge are off
+    right = 'off',
+    left = 'off',          
+    labelbottom='off', # labels along the bottom edge are off 
+    colors = 'black',
+    labelsize = 10,
+    direction = 'out') # ticks are outside the frame when bottom = 'on
+
+for label in ax.get_yticklabels():
+    label.set_fontname('Arial')
+
+# add lines
+lns = graph1+graph2+graph3+graph4+graph5+graph6+graph7+graph8
+# get labels
+labs = [categories[i] for i in range(len(categories))]
+# plot legend
+ax.legend(lns, labs, loc=2, fontsize = 8, frameon = False)
+
+# build outputfile namewith parameters
+# extract the cancer name
+if which_files == 'singlefile' and sample == 'tumor':
+    cancer = HeteroSummaryFile[HeteroSummaryFile.index('_') + 1: HeteroSummaryFile.index('_' + sample)]
+elif which_files == 'singlefile' and sample == 'specific':
+    cancer = HeteroSummaryFile[HeteroSummaryFile.index('_') + 1: HeteroSummaryFile.index('_TumorSpecific')]
+
+if which_files == 'singlefile':
+    outputfile = 'CDFFreqMutations' + cancer + sample.capitalize() + '.pdf'
+elif which_files == 'allfiles':
+    outputfile = 'CDFFreqMutations' + sample.capitalize() + '.pdf'
+
+fig.savefig(outputfile, bbox_inches = 'tight')
