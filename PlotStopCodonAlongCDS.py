@@ -79,12 +79,7 @@ plt.xticks(range(0, 110, 10))
 # set x axis label
 ax.set_xlabel('Relative CDS length (%)', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
 
-# add a light grey horizontal grid to the plot, semi-transparent, 
-ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5)  
-# hide these grids behind plot objects
-ax.set_axisbelow(True)
 
- 
 # do not show lines around figure, keep bottow line  
 ax.spines["top"].set_visible(False)    
 ax.spines["bottom"].set_visible(True)    
@@ -93,6 +88,11 @@ ax.spines["left"].set_visible(False)
 # offset the spines
 for spine in ax.spines.values():
   spine.set_position(('outward', 5))
+
+# add a light grey horizontal grid to the plot, semi-transparent, 
+ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5)  
+# hide these grids behind plot objects
+ax.set_axisbelow(True)
 
 # do not show ticks
 plt.tick_params(
