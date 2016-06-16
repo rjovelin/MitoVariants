@@ -5,29 +5,45 @@ Created on Fri Apr 29 14:28:04 2016
 @author: RJovelin
 """
 
-import os
-import sys
-from mito_mutations import *
-import matplotlib.pyplot as plt
-
 
 # create an histogramm with the number of mutations creating a stop codon along the CDS
 
 # place this script in the same folder with heteroplasmy summary files
 
 # usage python3 PlotStopCodonAlongCDS.py [options]
-# - [RNA/Tumor]: RNA variants only or tumor specific variants
-# outputfile: save figure to outputfile
+# - [singlefile/allfiles]: whether a single summary file or multiple summary files
+# - [tumor/specific]: whether RNA variants are in tumor or are tumor specific (filtered based on normale)
+# - HeteroplasmySummaryFile: summary file of tumor if singlefile is used
 
-datatype = sys.argv[1]
-outputfile = sys.argv[2]
+# import matplotlib and change api to use on server
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+from matplotlib import rc
+rc('mathtext', default='regular')
+# import built in modules
+import sys
+import os
+import numpy as np
+# import custom modules
+from mito_mutations import *
 
-# create a list of heteroplasmy summary files
-if datatype == 'RNA':
-    # record variants found only in RNA
-    files = [i for i in os.listdir() if 'RNAOnly' in i and '.txt' in i]
-elif datatype == 'Tumor':
-    files = [i for i in os.listdir() if 'Specific' in i and '.txt' in i]
+#use single of all summary files
+which_files = sys.argv[1]
+sample = sys.argv[2]
+
+if which_files == 'allfiles' and sample == 'tumor':
+    # make a list of summary files 
+    files = [i for i in os.listdir() if 'tumor_RNAOnly' in i and '.txt' in i]
+elif which_files == 'allfiles' and sample == 'specific':
+    # make a list of summary files 
+    files = [i for i in os.listdir() if 'TumorSpecific' in i and '.txt' in i]
+elif which_files == 'singlefile':
+    # get tumor from command
+    files = [sys.argv[3]]
+print(files)    
+
 
 # create a list to count all stop codons mutations
 PTC = []
@@ -38,12 +54,15 @@ for filename in files:
 
 
 # create figure
-fig = plt.figure(1, figsize = (4.3,2.56))
+fig = plt.figure(1, figsize = (4, 2))
 # add a plot to figure (1 row, 1 column, 1 plot)
 ax = fig.add_subplot(1, 1, 1)  
 
+# set width of bar
+width = 0.2
+
 # create histogram
-ax.hist(PTC, range(0, 110, 10), color = [0.392, 0.647, 0.769], edgecolor = 'w')
+ax.hist(PTC, range(0, 110, 10), color = '#9ecae1', edgecolor = '#9ecae1')
 
 # add title
 ax.set_title('Stop codon mutations along coding sequences\n', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
@@ -64,18 +83,17 @@ ax.set_xlabel('Relative CDS length (%)', size = 10, ha = 'center', fontname = 'H
 ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5)  
 # hide these grids behind plot objects
 ax.set_axisbelow(True)
-# remove top axes and right axes ticks
-ax.get_xaxis().tick_bottom()
-ax.get_yaxis().tick_left()
 
-plt.margins()
-  
-# do not show lines around figure  
+ 
+# do not show lines around figure, keep bottow line  
 ax.spines["top"].set_visible(False)    
-ax.spines["bottom"].set_visible(False)    
+ax.spines["bottom"].set_visible(True)    
 ax.spines["right"].set_visible(False)    
 ax.spines["left"].set_visible(False)      
-  
+# offset the spines
+for spine in ax.spines.values():
+  spine.set_position(('outward', 5))
+
 # do not show ticks
 plt.tick_params(
     axis='both',       # changes apply to the x-axis and y-axis (other option : x, y)
@@ -88,8 +106,23 @@ plt.tick_params(
     colors = 'black',
     labelsize = 10,
     direction = 'out') # ticks are outside the frame when bottom = 'on'  
-  
+
+# add margins around x axis 
+plt.margins(0.05)
+
+
+# build output file name from parameters
+
+# extract the cancer name
+if which_files == 'singlefile' and sample == 'tumor':
+    cancer = HeteroSummaryFile[HeteroSummaryFile.index('_') + 1: HeteroSummaryFile.index('_' + sample)]
+elif which_files == 'singlefile' and sample == 'specific':
+    cancer = HeteroSummaryFile[HeteroSummaryFile.index('_') + 1: HeteroSummaryFile.index('_TumorSpecific')]
+
+if which_files == 'singlefile':
+    outputfile = 'StopCodonsDistribution' + cancer + sample.capitalize() + '.pdf'
+elif which_files == 'allfiles':
+    outputfile = 'StopCodonsDistribution' + sample.capitalize() + '.pdf'
+
 # save figure
 fig.savefig(outputfile, bbox_inches = 'tight')
-
-
