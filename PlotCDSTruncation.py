@@ -5,19 +5,13 @@ Created on Thu Jun 16 12:28:37 2016
 @author: RJovelin
 """
 
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Apr 29 14:28:04 2016
-
-@author: RJovelin
-"""
 
 
-# create an histogramm with the number of mutations creating a stop codon along the CDS
+# create an histogramm with the number of mutations leading to a given truncation of CDS sequence
 
 # place this script in the same folder with heteroplasmy summary files
 
-# usage python3 PlotStopCodonAlongCDS.py [options]
+# usage python3 PlotCDSTruncation.py [options]
 # - [singlefile/allfiles]: whether a single summary file or multiple summary files
 # - [tumor/specific]: whether RNA variants are in tumor or are tumor specific (filtered based on normale)
 # - HeteroplasmySummaryFile: summary file of tumor if singlefile is used
@@ -52,13 +46,14 @@ elif which_files == 'singlefile':
 print(files)    
 
 
-# create a list to count all stop codons mutations
-PTC = []
+# create a list to count all % truncation
+truncation = []
 # loop over file name, record stop codon mutations
 for filename in files:
-    stops = StopCodonAlongCDS(filename, 'rCRS_genes_MT.text.txt', Sites = 'mutations', FirstOnly = False)
-    PTC.extend(stops)
-
+    stops = GeneTruncation(filename, 'rCRS_genes_MT.text.txt')
+    # loop over gene, record % truncation
+    for gene in stops:
+        truncation.append(stops[gene])
 
 # create figure
 fig = plt.figure(1, figsize = (4, 2))
@@ -69,10 +64,7 @@ ax = fig.add_subplot(1, 1, 1)
 width = 0.2
 
 # create histogram
-ax.hist(PTC, range(0, 110, 10), color = '#9ecae1', edgecolor = '#9ecae1')
-
-# add title
-ax.set_title('Stop codon mutations along coding sequences\n', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
+ax.hist(truncation, range(0, 110, 10), color = '#e34a33', edgecolor = '#e34a33')
 
 # set y axis label
 ax.set_ylabel('Number of PSC mutations', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
@@ -84,7 +76,7 @@ plt.yticks(fontsize = 10)
 plt.xticks(range(0, 110, 10))
 
 # set x axis label
-ax.set_xlabel('Relative CDS length (%)', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
+ax.set_xlabel('Percent CDS truncation', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
 
 
 # do not show lines around figure, keep bottow line  
@@ -127,9 +119,9 @@ elif which_files == 'singlefile' and sample == 'specific':
     cancer = HeteroSummaryFile[HeteroSummaryFile.index('_') + 1: HeteroSummaryFile.index('_TumorSpecific')]
 
 if which_files == 'singlefile':
-    outputfile = 'StopCodonsDistribution' + cancer + sample.capitalize() + '.pdf'
+    outputfile = 'CDSTruncation' + cancer + sample.capitalize() + '.pdf'
 elif which_files == 'allfiles':
-    outputfile = 'StopCodonsDistribution' + sample.capitalize() + '.pdf'
+    outputfile = 'CDSTruncation' + sample.capitalize() + '.pdf'
 
 # save figure
 fig.savefig(outputfile, bbox_inches = 'tight')
