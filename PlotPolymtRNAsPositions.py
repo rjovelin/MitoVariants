@@ -149,7 +149,7 @@ elif sample == 'specific':
 ax.set_ylabel('Polymorphism Information Content', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
 
 # add labels to x-ticks, rotate and align right, set size to 10
-ax.set_xticklabels([i for i in range(1, max(positions) + 1, 10)], rotation = 0, ha = 'center', size = 10, fontname = 'Helvetica', family = 'sans-serif')
+ax.set_xticklabels([i for i in range(0, max(positions) + 1, 10)], rotation = 0, ha = 'center', size = 10, fontname = 'Helvetica', family = 'sans-serif')
 
 plt.yticks(fontsize = 10)
 
