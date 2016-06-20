@@ -57,17 +57,17 @@ multialleles = {}
 
 # loop over filename in files
 for filename in files:
-    # create a dict {mutation: {individuals: [list of positions]}}
+    # create a dict {individuals: {positions: [alleles]}}
     snps = IdentifyMultiAllelicPositions(filename, threshold)
-    # count number of multiallele sites
-    nums = 0
+    # make a set of multiallele sites
+    nums = set()
     for individual in snps:
         for site in snps[individual]:
             if len(snps[individual][site]) > 2:
-                nums += 1
+                nums.add(site)
     # get tumor for filename
     tumor = filename[filename.index('_') + 1 : filename.index('_', filename.index('_') + 1)]
-    multialleles[tumor] = nums    
+    multialleles[tumor] = len(nums)    
        
 # make a list of tumor names sorted by count
 name_counts = []
@@ -80,7 +80,7 @@ print(tumors)
 print(counts)
 
 # create figure
-fig = plt.figure(1, figsize = (4.3,2.56))
+fig = plt.figure(1, figsize = (3.5, 2))
 
 # add axe to fig
 ax = fig.add_subplot(1, 1, 1)
