@@ -141,7 +141,7 @@ if sample == 'tumor':
 elif sample == 'specific':
     if which_files == 'singlefile':
         ax.set_title('{0} - Tumor-specific heteroplasmies\n'.format(cancer), size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
-    elif which-files == 'allfiles':
+    elif which_files == 'allfiles':
         ax.set_title('Tumor-specific heteroplasmies\n', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
 
 # set y axis label
@@ -155,11 +155,6 @@ plt.yticks(fontsize = 10)
 # set x axis label
 ax.set_xlabel('Position in tRNAs', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
 
-# add a light grey horizontal grid to the plot, semi-transparent, 
-ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5)  
-# hide these grids behind plot objects
-ax.set_axisbelow(True)
-
 # do not show lines around figure  
 ax.spines["top"].set_visible(False)    
 ax.spines["bottom"].set_visible(True)    
@@ -169,7 +164,11 @@ ax.spines["left"].set_visible(False)
 for spine in ax.spines.values():
   spine.set_position(('outward', 5))
   
- 
+# add a light grey horizontal grid to the plot, semi-transparent, 
+ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5)  
+# hide these grids behind plot objects
+ax.set_axisbelow(True)
+
 # do not show ticks
 plt.tick_params(
     axis='both',       # changes apply to the x-axis and y-axis (other option : x, y)
@@ -178,7 +177,8 @@ plt.tick_params(
     top='off',         # ticks along the top edge are off
     right = 'off',
     left = 'off',          
-    labelbottom='on') # labels along the bottom edge are off  
+    labelbottom='on',
+    direction = 'out') # labels along the bottom edge are off  
 
 plt.margins(0.1)
  
