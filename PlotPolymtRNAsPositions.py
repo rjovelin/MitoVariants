@@ -111,6 +111,7 @@ fig = plt.figure(1, figsize = (3.5, 2.5))
 ax = fig.add_subplot(1, 1, 1)  
 
 for i in positions:
+    # plot positions in 1-based indices
     # set up boolean
     RecordSite = False
     if RemoveSingleton == True:
@@ -124,9 +125,9 @@ for i in positions:
             if j > threshold:
                 # color position 9 (indidex 8) in red
                 if i == 8:
-                    ax.scatter(i, j, edgecolor = 'red', facecolor = 'red', lw = 0, s = 5, alpha = 0.8)
+                    ax.scatter(i + 1, j, edgecolor = 'red', facecolor = 'red', lw = 0, s = 5, alpha = 0.8)
                 else:
-                    ax.scatter(i, j, edgecolor = 'black', facecolor = 'black', lw = 0, s = 5, alpha = 0.8)
+                    ax.scatter(i + 1, j, edgecolor = 'black', facecolor = 'black', lw = 0, s = 5, alpha = 0.8)
 
 # restrict the x and y axis to the range of data
 ax.set_xlim([0, max(positions)+1])
@@ -148,7 +149,7 @@ elif sample == 'specific':
 ax.set_ylabel('Polymorphism Information Content', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
 
 # add labels to x-ticks, rotate and align right, set size to 10
-ax.set_xticklabels([0, 10, 20, 30, 40, 50, 60, 70, 80, 90], rotation = 0, ha = 'center', size = 10, fontname = 'Helvetica', family = 'sans-serif')
+ax.set_xticklabels([i for i in range(1, max(positions) + 1, 10)], rotation = 0, ha = 'center', size = 10, fontname = 'Helvetica', family = 'sans-serif')
 
 plt.yticks(fontsize = 10)
 
