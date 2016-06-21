@@ -131,11 +131,6 @@ elif frequency == 'counts':
 
 plt.xlabel('Tumor types', size = 12, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
 
-if tRNA == 'tRNA':
-    plt.title('Multiallelic mutations in tRNAs', size = 12, ha = 'center')
-elif tRNA == 'all':
-    plt.title('Multiallelic mutations in all genes', size = 12, ha = 'center')
-
 # Set a buffer around the edge
 plt.xlim([min(tick_pos)-bar_width, max(tick_pos)+bar_width])
 
@@ -144,7 +139,7 @@ ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)
 # hide these grids behind plot objects
 ax.set_axisbelow(True)
 
-
+# add margins
 plt.margins(0.05)
   
 # do not show lines around figure  
@@ -153,7 +148,10 @@ ax.spines["bottom"].set_visible(False)
 ax.spines["right"].set_visible(False)    
 ax.spines["left"].set_visible(False)      
 
-plt.title('Multiallelic sites in tumor genomes\n', size = 12)
+if tRNA == 'tRNA':
+    plt.title('Multiallelic sites in tRNAs\n', size = 12, ha = 'center')
+elif tRNA == 'all':
+    plt.title('Multiallelic sites in tumor genomes\n', size = 12, ha = 'center')
 
 plt.tick_params(
     axis='both',       # changes apply to the x-axis and y-axis (other option : x, y)
