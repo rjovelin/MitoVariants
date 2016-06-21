@@ -52,7 +52,7 @@ elif sample == 'specific':
 if which_files == 'singlefile':
     # get tumor from command
     HeteroplasmySummaryFile = sys.argv[5]
-    files = [filename]
+    files = [HeteroplasmySummaryFile]
 
     # get cancer name from summary file
     if sample == 'specific':
