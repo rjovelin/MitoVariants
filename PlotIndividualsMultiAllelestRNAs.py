@@ -96,6 +96,22 @@ for filename in files:
                     else:
                         multialleles[position] = 1
         
+# get a list of indices corresponding to the longest tRNAs
+# (ie. all tRNAs are aligned at first nt to plot N at each position)
+longest = 0
+for gene in mito_coords:
+    if gene.startswith('TRN'):
+        # get the length of the tRNA
+        L = mito_coords[gene][1] - mito_coords[gene][0] + 1
+        # update longest
+        if L > longest:
+            longest = L
+
+# add poisitions in dict if not present
+for i in range(longest):
+    if i not in multialleles:
+        multialleles[i] = 0
+
 # create a list of positions
 positions = [i for i in multialleles]
 positions.sort()
@@ -104,41 +120,9 @@ print('tRNA ', len(positions), min(positions), max(positions))
 
 
 
+######## edit below
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    # get tumor for filename
-    tumor = filename[filename.index('_') + 1 : filename.index('_', filename.index('_') + 1)]
-    multialleles[tumor] = len(nums)    
-       
-# make a list of tumor names sorted by count
-name_counts = []
-for i in multialleles:
-    name_counts.append([multialleles[i], i])
-name_counts.sort()
-tumors = [i[1] for i in name_counts]
-counts = [i[0] for i in name_counts]
-print(tumors)
-print(counts)
 
 # create figure
 fig = plt.figure(1, figsize = (3.5, 2))
@@ -213,140 +197,3 @@ plt.tick_params(
 # save figure
 fig.savefig(outputfile, bbox_inches = 'tight')
     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-####################
-
-
-# create figure
-fig = plt.figure(1, figsize = (3.5, 2.5))
-# add a plot to figure (1 row, 1 column, 1 plot)
-ax = fig.add_subplot(1, 1, 1)  
-
-for i in positions:
-    # plot positions in 1-based indices
-    # set up boolean
-    RecordSite = False
-    if RemoveSingleton == True:
-        if len(tRNAPolym[i]) > 1:
-            RecordSite = True
-    elif RemoveSingleton == False:
-        if len(tRNAPolym[i]) != 0:
-            RecordSite = True
-    if RecordSite == True:
-        for j in tRNAPolym[i]:
-            if j > threshold:
-                # color position 9 (indidex 8) in red
-                if i == 8:
-                    ax.scatter(i + 1, j, edgecolor = 'red', facecolor = 'red', lw = 0, s = 5, alpha = 0.8)
-                else:
-                    ax.scatter(i + 1, j, edgecolor = 'black', facecolor = 'black', lw = 0, s = 5, alpha = 0.8)
-
-# restrict the x and y axis to the range of data
-ax.set_xlim([0, max(positions)+1])
-ax.set_ylim([0, 1])
-            
-# set title
-if sample == 'tumor':
-    if which_files == 'singlefile':
-        ax.set_title('{0} - Heteroplasmies in tumor\n'.format(cancer), size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
-    elif which_files == 'allfiles':
-        ax.set_title('Heteroplasmies in tumor\n', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
-elif sample == 'specific':
-    if which_files == 'singlefile':
-        ax.set_title('{0} - Tumor-specific heteroplasmies\n'.format(cancer), size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
-    elif which_files == 'allfiles':
-        ax.set_title('Tumor-specific heteroplasmies\n', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
-
-# set y axis label
-ax.set_ylabel('Polymorphism Information Content', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
-
-# add labels to x-ticks, rotate and align right, set size to 10
-ax.set_xticklabels([i for i in range(0, max(positions) + 1, 10)], rotation = 0, ha = 'center', size = 10, fontname = 'Helvetica', family = 'sans-serif')
-
-plt.yticks(fontsize = 10)
-
-# set x axis label
-ax.set_xlabel('Position in tRNAs', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
-
-# do not show lines around figure  
-ax.spines["top"].set_visible(False)    
-ax.spines["bottom"].set_visible(True)    
-ax.spines["right"].set_visible(False)    
-ax.spines["left"].set_visible(False)      
-# offset the spines
-for spine in ax.spines.values():
-  spine.set_position(('outward', 5))
-  
-# add a light grey horizontal grid to the plot, semi-transparent, 
-ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5)  
-# hide these grids behind plot objects
-ax.set_axisbelow(True)
-
-# do not show ticks
-plt.tick_params(
-    axis='both',       # changes apply to the x-axis and y-axis (other option : x, y)
-    which='both',      # both major and minor ticks are affected
-    bottom='on',      # ticks along the bottom edge are off
-    top='off',         # ticks along the top edge are off
-    right = 'off',
-    left = 'off',          
-    labelbottom='on',
-    direction = 'out') # labels along the bottom edge are off  
-
-plt.margins(0.1)
- 
-# build outputfile with parameters  
-if RemoveSingleton == True:
-    if which_files == 'singlefile':
-        outputfile = 'PolymtRNAs' + cancer + sample.capitalize() + 'NoSingletons' + '.pdf'
-    elif which_files == 'allfiles':
-        outputfile = 'PolymtRNAs' + sample.capitalize() + 'NoSingletons' + '.pdf'
-elif RemoveSingleton == False:
-    if which_files == 'singlefile':
-        outputfile = 'PolymtRNAs' + cancer + sample.capitalize() + '.pdf'
-    elif which_files == 'allfiles':
-        outputfile = 'PolymtRNAs' + sample.capitalize() + '.pdf'
-  
-# save figure
-fig.savefig(outputfile, bbox_inches = 'tight')
-
