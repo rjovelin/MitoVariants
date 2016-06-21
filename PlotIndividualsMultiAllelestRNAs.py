@@ -1,0 +1,352 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Jun 21 11:49:41 2016
+
+@author: RJovelin
+"""
+
+
+# create a figure with number of individuals with multiallelic sites for each positions of tRNAs
+
+# place this script in folder with heteroplasmy summary files
+
+# usage python3 PlotIndividualsMultiAllelestRNAs.py [options]
+# - threshold: % reads to identifiy heteroplasmies
+# - [specific/tumor]: consider tumor specific RNA variants (variable positions in normal are filtered)
+#                     or tumor RNA variants (include both tissue specific and tumor specific variants)
+# [singlefile, allfiles]: if a single summary file is used or if data is pooled across all summary files
+
+# import matplotlib and change api to use on server
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+from matplotlib import rc
+rc('mathtext', default='regular')
+# import built in modules
+import sys
+import os
+import numpy as np
+# import custom modules
+from mito_mutations import *
+
+
+# get threshold from command
+threshold = float((sys.argv[1]))
+sample = sys.argv[2]
+which_files = sys.argv[3]
+
+# make a list of summary files 
+if sample == 'tumor' and which_files == 'allfiles':
+    files = [i for i in os.listdir() if 'RNAOnly' in i and '.txt' in i]
+elif sample == 'specific' and which_files == 'allfiles':
+    files = [i for i in os.listdir() if 'TumorSpecific' in i and '.txt' in i]
+elif which_files == 'singlefile':
+    # get tumor from command
+    HeteroplasmySummaryFile = sys.argv[4]
+    files = [HeteroplasmySummaryFile]
+    # get cancer name from summary file
+    if sample == 'specific':
+        cancer = HeteroSummaryFile[HeteroSummaryFile.index('_') + 1: HeteroSummaryFile.index('_TumorSpecific')]
+    else:
+        cancer = HeteroSummaryFile[HeteroSummaryFile.index('_') + 1: HeteroSummaryFile.index('_' + sample)]
+
+if which_files == 'singlefile':
+    outputfile = 'MultiAlleleCountstRNAPositions' + cancer + sample.capitalize() + 'Het' + str(threshold) + '.pdf'
+elif which_files == 'allfiles':
+    outputfile = 'MultiAlleleCountstRNAPositions' + sample.capitalize() + 'Het' + str(threshold) + '.pdf'
+
+# get the positions of each mitochiondrial gene
+mito_genes = MitoAnnotation('rCRS_genes_MT.text.txt')
+# make a set of tRNA positions
+trna_indices = []
+for gene in mito_genes:
+    if gene.startswith('TRN'):
+        for i in mito_genes[gene]:
+            trna_indices.append(i)
+
+# get the gene coordinates [start, end, orientation]
+mito_coords = MitoCoordinates('rCRS_genes_MT.text.txt')
+
+# create a dict {positions: N individuals with multiallelic variant}
+multialleles = {}
+
+# loop over filename in files
+for filename in files:
+    # create a dict {individuals: {positions: [alleles]}}
+    snps = IdentifyMultiAllelicPositions(filename, threshold)
+    # check if variant site is multiallelic
+    for individual in snps:
+        for site in snps[individual]:
+            # check if site in tRNA
+            if site in trna_indices:
+                # check if variant is multiallelic
+                if len(snps[individual][site]) > 2:
+                    # find the tRNA corresponding to current site
+                    for gene in mito_genes:
+                        if site in mito_genes[gene]:
+                            # stop looking, found tRNA gene
+                            break
+                    # convert genomic position to tRNA position
+                    assert site in range(mito_coords[gene][0], mito_coords[gene][1]), 'position should be in {0}'.format(gene)
+                    position = GenomicPositionToGenePosition(site, mito_coords[gene][0], mito_coords[gene][1], mito_coords[gene][2])                    
+                    # populate dict
+                    if position in multialleles:
+                        multialleles[position] += 1
+                    else:
+                        multialleles[position] = 1
+        
+# create a list of positions
+positions = [i for i in multialleles]
+positions.sort()
+print('tRNA ', len(positions), min(positions), max(positions))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # get tumor for filename
+    tumor = filename[filename.index('_') + 1 : filename.index('_', filename.index('_') + 1)]
+    multialleles[tumor] = len(nums)    
+       
+# make a list of tumor names sorted by count
+name_counts = []
+for i in multialleles:
+    name_counts.append([multialleles[i], i])
+name_counts.sort()
+tumors = [i[1] for i in name_counts]
+counts = [i[0] for i in name_counts]
+print(tumors)
+print(counts)
+
+# create figure
+fig = plt.figure(1, figsize = (3.5, 2))
+
+# add axe to fig
+ax = fig.add_subplot(1, 1, 1)
+
+# Set the bar width
+bar_width = 0.4
+
+# set positions of the left bar-boundaries
+bar_left = [i for i in range(len(counts))]
+# set positions of the x-axis ticks (center of the bars as bar labels)
+tick_pos = [i+(bar_width/2) for i in bar_left]
+
+if frequency == 'frequency':
+    # count total number of mutations
+    total = sum(counts)
+    print(total)
+    # set the y ticks
+    counts = list(map(lambda x: x / total, counts))
+#    plt.yticks([i/100 for i in range(0, 125, 25)], [0, 0.25, 0.50, 0.75, 1])
+
+# Create a bar plot, in position bar_left for counts
+plt.bar(bar_left, counts, width=bar_width, color= 'red')
+
+# set the x ticks with names
+plt.xticks(tick_pos, tumors, rotation = 20, ha = 'right', size = 12)
+
+
+# set axis labels
+if frequency == 'frequency':
+    plt.ylabel('Proportion of multiallelic mutations', size = 12, ha = 'center', fontname = 'Helvetica', family = 'sans-serif', color = 'black')
+elif frequency == 'counts':
+    plt.ylabel('Number of multiallelic mutations', size = 12, ha = 'center', fontname = 'Helvetica', family = 'sans-serif', color = 'black')
+
+plt.xlabel('Tumor types', size = 12, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
+
+# Set a buffer around the edge
+plt.xlim([min(tick_pos)-bar_width, max(tick_pos)+bar_width])
+
+# add a light grey horizontal grid to the plot, semi-transparent, 
+ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)  
+# hide these grids behind plot objects
+ax.set_axisbelow(True)
+
+# add margins
+plt.margins(0.05)
+  
+# do not show lines around figure  
+ax.spines["top"].set_visible(False)    
+ax.spines["bottom"].set_visible(False)    
+ax.spines["right"].set_visible(False)    
+ax.spines["left"].set_visible(False)      
+
+if tRNA == 'tRNA':
+    plt.title('Multiallelic sites in tRNAs\n', size = 12, ha = 'center')
+elif tRNA == 'all':
+    plt.title('Multiallelic sites in tumor genomes\n', size = 12, ha = 'center')
+
+plt.tick_params(
+    axis='both',       # changes apply to the x-axis and y-axis (other option : x, y)
+    which='both',      # both major and minor ticks are affected
+    bottom='off',      # ticks along the bottom edge are off
+    top='off',         # ticks along the top edge are off
+    right = 'off',
+    left = 'off',          
+    labelbottom='on', # labels along the bottom edge are off 
+    colors = 'black'
+    )  
+
+# save figure
+fig.savefig(outputfile, bbox_inches = 'tight')
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+####################
+
+
+# create figure
+fig = plt.figure(1, figsize = (3.5, 2.5))
+# add a plot to figure (1 row, 1 column, 1 plot)
+ax = fig.add_subplot(1, 1, 1)  
+
+for i in positions:
+    # plot positions in 1-based indices
+    # set up boolean
+    RecordSite = False
+    if RemoveSingleton == True:
+        if len(tRNAPolym[i]) > 1:
+            RecordSite = True
+    elif RemoveSingleton == False:
+        if len(tRNAPolym[i]) != 0:
+            RecordSite = True
+    if RecordSite == True:
+        for j in tRNAPolym[i]:
+            if j > threshold:
+                # color position 9 (indidex 8) in red
+                if i == 8:
+                    ax.scatter(i + 1, j, edgecolor = 'red', facecolor = 'red', lw = 0, s = 5, alpha = 0.8)
+                else:
+                    ax.scatter(i + 1, j, edgecolor = 'black', facecolor = 'black', lw = 0, s = 5, alpha = 0.8)
+
+# restrict the x and y axis to the range of data
+ax.set_xlim([0, max(positions)+1])
+ax.set_ylim([0, 1])
+            
+# set title
+if sample == 'tumor':
+    if which_files == 'singlefile':
+        ax.set_title('{0} - Heteroplasmies in tumor\n'.format(cancer), size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
+    elif which_files == 'allfiles':
+        ax.set_title('Heteroplasmies in tumor\n', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
+elif sample == 'specific':
+    if which_files == 'singlefile':
+        ax.set_title('{0} - Tumor-specific heteroplasmies\n'.format(cancer), size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
+    elif which_files == 'allfiles':
+        ax.set_title('Tumor-specific heteroplasmies\n', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
+
+# set y axis label
+ax.set_ylabel('Polymorphism Information Content', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
+
+# add labels to x-ticks, rotate and align right, set size to 10
+ax.set_xticklabels([i for i in range(0, max(positions) + 1, 10)], rotation = 0, ha = 'center', size = 10, fontname = 'Helvetica', family = 'sans-serif')
+
+plt.yticks(fontsize = 10)
+
+# set x axis label
+ax.set_xlabel('Position in tRNAs', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
+
+# do not show lines around figure  
+ax.spines["top"].set_visible(False)    
+ax.spines["bottom"].set_visible(True)    
+ax.spines["right"].set_visible(False)    
+ax.spines["left"].set_visible(False)      
+# offset the spines
+for spine in ax.spines.values():
+  spine.set_position(('outward', 5))
+  
+# add a light grey horizontal grid to the plot, semi-transparent, 
+ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5)  
+# hide these grids behind plot objects
+ax.set_axisbelow(True)
+
+# do not show ticks
+plt.tick_params(
+    axis='both',       # changes apply to the x-axis and y-axis (other option : x, y)
+    which='both',      # both major and minor ticks are affected
+    bottom='on',      # ticks along the bottom edge are off
+    top='off',         # ticks along the top edge are off
+    right = 'off',
+    left = 'off',          
+    labelbottom='on',
+    direction = 'out') # labels along the bottom edge are off  
+
+plt.margins(0.1)
+ 
+# build outputfile with parameters  
+if RemoveSingleton == True:
+    if which_files == 'singlefile':
+        outputfile = 'PolymtRNAs' + cancer + sample.capitalize() + 'NoSingletons' + '.pdf'
+    elif which_files == 'allfiles':
+        outputfile = 'PolymtRNAs' + sample.capitalize() + 'NoSingletons' + '.pdf'
+elif RemoveSingleton == False:
+    if which_files == 'singlefile':
+        outputfile = 'PolymtRNAs' + cancer + sample.capitalize() + '.pdf'
+    elif which_files == 'allfiles':
+        outputfile = 'PolymtRNAs' + sample.capitalize() + '.pdf'
+  
+# save figure
+fig.savefig(outputfile, bbox_inches = 'tight')
+
