@@ -116,13 +116,8 @@ for i in range(longest):
 positions = [i for i in multialleles]
 positions.sort()
 print('tRNA ', len(positions), min(positions), max(positions))
-
-
-
-
-######## edit below
-
-
+# create a list of counts
+counts = [multialleles[i] for i in positions]
 
 # create figure
 fig = plt.figure(1, figsize = (3.5, 2))
@@ -131,7 +126,13 @@ fig = plt.figure(1, figsize = (3.5, 2))
 ax = fig.add_subplot(1, 1, 1)
 
 # Set the bar width
-bar_width = 0.4
+bar_width = 0.2
+
+
+
+
+#### edit below
+
 
 # set positions of the left bar-boundaries
 bar_left = [i for i in range(len(counts))]
