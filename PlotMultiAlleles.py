@@ -16,7 +16,7 @@ Created on Sun May  1 22:10:55 2016
 # - [frequency/counts]: plot frequency or counts of mutational effects
 # - [specific/tumor]: consider tumor specific RNA variants (variable positions in normal are filtered)
 #                     or tumor RNA variants (include both tissue specific and tumor specific variants)
-
+# - [tRNA/all]: consider only positions in tRNAs or all positions
 
 
 
@@ -35,13 +35,11 @@ import numpy as np
 from mito_mutations import *
 
 
-
-
 # get threshold from command
 threshold = int(sys.argv[1])
 frequency = sys.argv[2]
 sample = sys.argv[3]
-
+tRNA = sys.argv[4]
 
 # make a list of summary files 
 if sample == 'tumor':
@@ -50,7 +48,19 @@ elif sample == 'specific':
     files = [i for i in os.listdir() if 'TumorSpecific' in i and '.txt' in i]
 
 #build outputfile
-outputfile = 'MultiAlleleVariants' + frequency.capitalize() + sample.capitalize() + 'Het' + str(threshold) + '.pdf'
+if tRNA == 'all':
+    outputfile = 'MultiAlleleVariants' + frequency.capitalize() + sample.capitalize() + 'Het' + str(threshold) + '.pdf'
+elif tRNA == 'tRNA':
+    outputfile = 'MultiAlleleVariants' + frequency.capitalize() + sample.capitalize() + tRNA + 'Het' + str(threshold) + '.pdf'
+
+# get the positions of each mitochiondrial gene
+mito_genes = MitoAnnotation('rCRS_genes_MT.text.txt')
+# make a set of tRNA positions
+trna_indices = []
+for gene in mito_genes:
+    if gene.startswith('TRN'):
+        for i in mito_genes[gene]:
+            trna_indices.append(i)
 
 # create a dict {tumor: N multiallelic}
 multialleles = {}
@@ -63,8 +73,13 @@ for filename in files:
     nums = set()
     for individual in snps:
         for site in snps[individual]:
-            if len(snps[individual][site]) > 2:
-                nums.add(site)
+            # check if all positions or if only tRNA positions should be recorded
+            if tRNA == 'tRNA' and site in trna_indices:
+                if len(snps[individual][site]) > 2:
+                    nums.add(site)
+            elif tRNA == 'all':
+                if len(snps[individual][site]) > 2:
+                    nums.add(site)
     # get tumor for filename
     tumor = filename[filename.index('_') + 1 : filename.index('_', filename.index('_') + 1)]
     multialleles[tumor] = len(nums)    
@@ -107,8 +122,6 @@ plt.bar(bar_left, counts, width=bar_width, color= 'red')
 # set the x ticks with names
 plt.xticks(tick_pos, tumors, rotation = 20, ha = 'right', size = 12)
 
-#### need to edit the y ticks
-
 
 # set axis labels
 if frequency == 'frequency':
@@ -117,6 +130,11 @@ elif frequency == 'counts':
     plt.ylabel('Number of multiallelic mutations', size = 12, ha = 'center', fontname = 'Helvetica', family = 'sans-serif', color = 'black')
 
 plt.xlabel('Tumor types', size = 12, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
+
+if tRNA == 'tRNA':
+    plt.title('Multiallelic mutations in tRNAs', size = 12, ha = 'center')
+elif tRNA == 'all':
+    plt.title('Multiallelic mutations in all genes', size = 12, ha = 'center')
 
 # Set a buffer around the edge
 plt.xlim([min(tick_pos)-bar_width, max(tick_pos)+bar_width])
@@ -127,7 +145,7 @@ ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)
 ax.set_axisbelow(True)
 
 
-plt.margins()
+plt.margins(0.05)
   
 # do not show lines around figure  
 ax.spines["top"].set_visible(False)    
