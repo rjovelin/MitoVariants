@@ -130,17 +130,12 @@ ax = fig.add_subplot(1, 1, 1)
 # Set the bar width
 bar_width = 0.2
 
-# set up color
-colorscheme = ['red', 'black', 'black']
-
 # Create a bar plot, in position bar_left for counts
 for i in range(len(Positions)):
-    plt.bar(Positions[i], Counts[i], width = bar_width, color= colorscheme[i])
-
-# set positions of the x-axis ticks (center of the bars as bar labels)
-#tick_pos = [i+(bar_width/2) for i in bar_left]
-# set the x ticks with names
-#plt.xticks(tick_pos, tumors, rotation = 20, ha = 'right', size = 12)
+    if Positions[i] == 9:
+        plt.bar(Positions[i], Counts[i], width = bar_width, color= 'red', edgecolor = 'red')
+    else:
+        plt.bar(Positions[i], Counts[i], width = bar_width, color= 'black', edgecolor = 'black')
 
 # limit the x axis
 plt.xlim([0, max(positions)+1])
