@@ -51,11 +51,6 @@ elif which_files == 'singlefile':
     else:
         cancer = HeteroSummaryFile[HeteroSummaryFile.index('_') + 1: HeteroSummaryFile.index('_' + sample)]
 
-if which_files == 'singlefile':
-    outputfile = 'MultiAlleleCountstRNAPositions' + cancer + sample.capitalize() + 'Het' + str(threshold) + '.pdf'
-elif which_files == 'allfiles':
-    outputfile = 'MultiAlleleCountstRNAPositions' + sample.capitalize() + 'Het' + str(threshold) + '.pdf'
-
 # get the positions of each mitochiondrial gene
 mito_genes = MitoAnnotation('rCRS_genes_MT.text.txt')
 # make a set of tRNA positions
@@ -119,81 +114,76 @@ print('tRNA ', len(positions), min(positions), max(positions))
 # create a list of counts
 counts = [multialleles[i] for i in positions]
 
+# create parallel lists with counts and positions, without 0s
+Indices = [i for i in range(len(counts)) if counts[i] != 0]
+Counts = [counts[i] for i in Indices]
+# create a list of positions 1-index based
+Positions = [positions[i]+1 for i in Indices]
+print(Counts)
+print(Positions)
+
 # create figure
 fig = plt.figure(1, figsize = (3.5, 2))
-
 # add axe to fig
 ax = fig.add_subplot(1, 1, 1)
 
 # Set the bar width
 bar_width = 0.2
 
-
-
-
-#### edit below
-
-
-# set positions of the left bar-boundaries
-bar_left = [i for i in range(len(counts))]
-# set positions of the x-axis ticks (center of the bars as bar labels)
-tick_pos = [i+(bar_width/2) for i in bar_left]
-
-if frequency == 'frequency':
-    # count total number of mutations
-    total = sum(counts)
-    print(total)
-    # set the y ticks
-    counts = list(map(lambda x: x / total, counts))
-#    plt.yticks([i/100 for i in range(0, 125, 25)], [0, 0.25, 0.50, 0.75, 1])
+# set up color
+colorscheme = ['red', 'black', 'black']
 
 # Create a bar plot, in position bar_left for counts
-plt.bar(bar_left, counts, width=bar_width, color= 'red')
+for i in range(len(Positions)):
+    plt.bar(Positions[i], Counts[i], width = bar_width, color= colorscheme[i])
 
+# set positions of the x-axis ticks (center of the bars as bar labels)
+#tick_pos = [i+(bar_width/2) for i in bar_left]
 # set the x ticks with names
-plt.xticks(tick_pos, tumors, rotation = 20, ha = 'right', size = 12)
+#plt.xticks(tick_pos, tumors, rotation = 20, ha = 'right', size = 12)
 
+# limit the x axis
+plt.xlim([0, max(positions)+1])
 
-# set axis labels
-if frequency == 'frequency':
-    plt.ylabel('Proportion of multiallelic mutations', size = 12, ha = 'center', fontname = 'Helvetica', family = 'sans-serif', color = 'black')
-elif frequency == 'counts':
-    plt.ylabel('Number of multiallelic mutations', size = 12, ha = 'center', fontname = 'Helvetica', family = 'sans-serif', color = 'black')
-
-plt.xlabel('Tumor types', size = 12, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
-
-# Set a buffer around the edge
-plt.xlim([min(tick_pos)-bar_width, max(tick_pos)+bar_width])
-
-# add a light grey horizontal grid to the plot, semi-transparent, 
-ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)  
-# hide these grids behind plot objects
-ax.set_axisbelow(True)
+# add axes labels
+plt.ylabel('Number of individuals', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif', color = 'black')
+plt.xlabel('Positions in tRNAs', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
 
 # add margins
 plt.margins(0.05)
   
 # do not show lines around figure  
 ax.spines["top"].set_visible(False)    
-ax.spines["bottom"].set_visible(False)    
+ax.spines["bottom"].set_visible(True)    
 ax.spines["right"].set_visible(False)    
 ax.spines["left"].set_visible(False)      
+# offset the spines
+for spine in ax.spines.values():
+  spine.set_position(('outward', 5))
 
-if tRNA == 'tRNA':
-    plt.title('Multiallelic sites in tRNAs\n', size = 12, ha = 'center')
-elif tRNA == 'all':
-    plt.title('Multiallelic sites in tumor genomes\n', size = 12, ha = 'center')
+# add a light grey horizontal grid to the plot, semi-transparent, 
+ax.yaxis.grid(True, linestyle='--', which='major', color='lightgrey', alpha=0.5)  
+# hide these grids behind plot objects
+ax.set_axisbelow(True)
+
 
 plt.tick_params(
     axis='both',       # changes apply to the x-axis and y-axis (other option : x, y)
     which='both',      # both major and minor ticks are affected
-    bottom='off',      # ticks along the bottom edge are off
+    bottom='on',      # ticks along the bottom edge are off
     top='off',         # ticks along the top edge are off
     right = 'off',
     left = 'off',          
     labelbottom='on', # labels along the bottom edge are off 
-    colors = 'black'
+    colors = 'black',
+    direction = 'out'
     )  
+
+
+if which_files == 'singlefile':
+    outputfile = 'MultiAlleleCountstRNAPositions' + cancer + sample.capitalize() + 'Het' + str(threshold) + '.pdf'
+elif which_files == 'allfiles':
+    outputfile = 'MultiAlleleCountstRNAPositions' + sample.capitalize() + 'Het' + str(threshold) + '.pdf'
 
 # save figure
 fig.savefig(outputfile, bbox_inches = 'tight')
