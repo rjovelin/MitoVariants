@@ -1226,7 +1226,7 @@ def ComputeHeteroplasmyFrequencyMutant(HeteroSummaryFile, threshold):
                     allele_counts = int(line[13]) + int(line[17])
                 elif alleles[i] == 'C':
                     allele_counts = int(line[14]) + int(line[18])
-                elif allele[i] == 'G':
+                elif alleles[i] == 'G':
                     allele_counts = int(line[15]) + int(line[19])
                 assert (allele_counts / total_reads) * 100 > threshold, 'allele frequency is lower than heteroplasmy threshold'   
                 # check if allele counts is major or minor allele count                
