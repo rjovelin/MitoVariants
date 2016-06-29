@@ -34,7 +34,7 @@ from mito_mutations import *
 #use single of all summary files
 which_files = sys.argv[1]
 sample = sys.argv[2]
-thresfold = float(sys.argv[3])
+threshold = float(sys.argv[3])
 
 if which_files == 'allfiles' and sample == 'tumor':
     # make a list of summary files 
