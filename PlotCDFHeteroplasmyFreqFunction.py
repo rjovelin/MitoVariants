@@ -65,7 +65,7 @@ for filename in files:
         if effect in mutations:
             mutations[effect].extend(list(snpeffect[effect]))
         else:
-            mutations[effect] = list(snpeffectct[effect])
+            mutations[effect] = list(snpeffect[effect])
 
 # sort frequency values
 for effect in mutations:
