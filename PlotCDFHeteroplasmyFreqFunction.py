@@ -170,16 +170,16 @@ print(labs)
 # plot legend
 ax.legend(lns, labs, loc=4, fontsize = 6, frameon = False)
 
-## build outputfile namewith parameters
-## extract the cancer name
-#if which_files == 'singlefile' and sample == 'tumor':
-#    cancer = HeteroSummaryFile[HeteroSummaryFile.index('_') + 1: HeteroSummaryFile.index('_' + sample)]
-#elif which_files == 'singlefile' and sample == 'specific':
-#    cancer = HeteroSummaryFile[HeteroSummaryFile.index('_') + 1: HeteroSummaryFile.index('_TumorSpecific')]
-#
-#if which_files == 'singlefile':
-#    outputfile = 'CDFFreqMutations' + cancer + sample.capitalize() + '.pdf'
-#elif which_files == 'allfiles':
-#    outputfile = 'CDFFreqMutations' + sample.capitalize() + '.pdf'
+# build outputfile namewith parameters
+# extract the cancer name
+if which_files == 'singlefile' and sample == 'tumor':
+    cancer = HeteroSummaryFile[HeteroSummaryFile.index('_') + 1: HeteroSummaryFile.index('_' + sample)]
+elif which_files == 'singlefile' and sample == 'specific':
+    cancer = HeteroSummaryFile[HeteroSummaryFile.index('_') + 1: HeteroSummaryFile.index('_TumorSpecific')]
 
-fig.savefig('testfile.pdf', bbox_inches = 'tight')
+if which_files == 'singlefile':
+    outputfile = 'CDFMutantAlleleFreq' + cancer + sample.capitalize() + '.pdf'
+elif which_files == 'allfiles':
+    outputfile = 'CDFMutantAllelefreq' + sample.capitalize() + '.pdf'
+
+fig.savefig(outputfile, bbox_inches = 'tight')
