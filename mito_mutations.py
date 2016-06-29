@@ -1171,3 +1171,104 @@ def ComputeAlleleFrequency(HeteroSummaryFile):
         
     return MutationTypes
     
+# use this function to compute the heteroplasmy frequency (within individuals) of mutant alleles
+def ComputeHeteroplasmyFrequencyMutant(HeteroSummaryFile, threshold):
+    '''
+    (file, int) -> dict
+    Take the file with heteroplasmy summary, a threshold (in %) to detecte heteroplasmies,
+    and return a dict with SNP functional category : list of heteroplasmy frequencies
+    (within individuals) for the mutant allele   
+    '''
+    
+    # create a dict to store the heteroplasmy frequency for each functional effect
+    # {effect: [list of freq]}
+    heteroplasmyfreq = {}    
+    # create a dict with {position: mutation_type: [list of frequencies]}
+    MutantAlleles = {}
+    
+    # open file for reading
+    infile = open(HeteroSummaryFile)
+    infile.readline()
+    for line in infile:
+        if line.rstrip() != '':
+            line = line.rstrip().split('\t')
+            # get mutation category
+            if line[2].startswith('TRN'):
+                effect = 'tRNA'
+            elif line[2] == 'DLoop':
+                effect = 'DLoop'
+            elif line[2] == 'NonCoding':
+                effect = 'NonCoding'
+            elif line[2] in ('RNR1', 'RNR2'):
+                effect = 'Ribosomal'
+            else:
+                # do not consider the few positions not synonymous and nonsynonymous
+                if '|' not in line[4]:
+                    effect = line[4]
+            # get position 0-based, positions are ordered in summary file
+            position = int(line[0]) - 1
+            # get reference allele
+            ref = line[6]
+            # get major and minor allele
+            major, minor = line[7], line[8]
+            # get major and minor counts
+            major_counts, minor_counts = int(line[9]), int(line[10])            
+            # verify that major and minor read counts > threshold
+            alleles = [major, minor]
+            total_reads = 0
+            allele_freq = []
+            for i in range(12, 20):
+                total_reads += int(line[i])
+            for i in range(len(alleles)):
+                if alleles[i] == 'A':
+                    allele_counts = int(line[12]) + int(line[16])
+                elif alleles[i] == 'T':
+                    allele_counts = int(line[13]) + int(line[17])
+                elif alleles[i] == 'C':
+                    allele_counts = int(line[14]) + int(line[18])
+                elif allele[i] == 'G':
+                    allele_counts = int(line[15]) + int(line[19])
+                assert (allele_counts / total_reads) * 100 > threshold, 'allele frequency is lower than heteroplasmy threshold'   
+                # check if allele counts is major or minor allele count                
+                if i == 0:
+                    assert allele_counts == major_counts, 'allele count is different than major count'
+                elif i == 1:
+                    assert allele_counts == minor_counts, 'allele count is different than minor count'
+                allele_freq.append(allele_counts / total_reads)
+            # identify mutant allele by comparing minor and major to ref
+            # get the frequency (read count / total reads at position) for the mutant allele
+            if major == ref and minor != ref:
+                # mutant is minor
+                freq = allele_freq[1]
+            elif major != ref and minor == ref:
+                # mutant is major            
+                freq = allele_freq[0]
+            # add freq to list for that functional effect    
+            if position in MutantAlleles:
+                # check if effect in inner dict
+                if effect in MutantAlleles[position]:
+                    # add frequency to list
+                    MutantAlleles[position][effect].append(freq)
+                else:
+                    # initialize list
+                    MutantAlleles[position][effect] = [freq]
+            else:
+                # initialize dict
+                MutantAlleles[position] = {}
+                MutantAlleles[position][effect] = [freq]
+
+    infile.close()    
+    
+    # populate heteroplasmy freq dict    
+    for position in MutantAlleles:
+        # check that a single functional category corresponds to each given position
+        assert len(MutantAlleles[position]) == 1, 'more than 1 functional category for the same position'
+        for effect in MutantAlleles[position]:
+            if effect in heteroplasmyfreq:
+                # add frequences to list
+                heteroplasmyfreq[effect].extend(MutantAlleles[position][effect])
+            else:
+                heteroplasmyfreq[effect] = list(MutantAlleles[position][effect])
+    
+    return heteroplasmyfreq
+     
