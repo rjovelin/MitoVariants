@@ -11,9 +11,10 @@ Created on Wed Jun 29 15:23:39 2016
 
 # place this script in folder with heteroplasmy summary files
 
-# usage python3 PlotAlleleFrequencyFunction.py [options]
+# usage python3 PlotCDFHeteroplasmyfreqFunction.py [options]
 # - [singlefile/allfiles]: whether a single summary file or multiple summary files
 # - [tumor/specific]: whether RNA variants are in tumor or are tumor specific (filtered based on normale)
+# - threshold (in%) to detect heteroplasmy
 # - HeteroplasmySummaryFile: summary file of tumor if singlefile is used
 
 # import matplotlib and change api to use on server
@@ -33,7 +34,7 @@ from mito_mutations import *
 #use single of all summary files
 which_files = sys.argv[1]
 sample = sys.argv[2]
-
+thresfold = float(sys.argv[3])
 
 if which_files == 'allfiles' and sample == 'tumor':
     # make a list of summary files 
@@ -43,29 +44,28 @@ elif which_files == 'allfiles' and sample == 'specific':
     files = [i for i in os.listdir() if 'TumorSpecific' in i and '.txt' in i]
 elif which_files == 'singlefile':
     # get tumor from command
-    files = [sys.argv[3]]
+    files = [sys.argv[4]]
+    if sample == 'tumor':
+        assert 'tumor_RNAOnly' in files[0], 'summary file should be for RNA variants'
+    elif sample == 'specific':
+        assert 'TumorSpecific' in files[0], 'summary file sould be for tumor-specific RNA variants'
     
-print(files)    
-    
-    
+ 
 # create a dict {mutation: [list of allele frequencies]}
 mutations = {}
 
 # loop over filename in files
 for filename in files:
     # compute allele frequencies for each mutation category
-    # create a dict {functional_effect: [list of allele frequencies]}
-    snpeffect = ComputeAlleleFrequency(filename)
+    # create a dict {functional_effect: [list of mutant allele frequencies]}
+    snpeffect = ComputeHeteroplasmyFrequencyMutant(filename, threshold)
     # pool all allelic frequencies togather
     for effect in snpeffect:
-        # copy list of frequencies
-        freq = list(snpeffect[effect])
-        # add poitions to list value
+        # add frequencies to list value
         if effect in mutations:
-            mutations[effect].extend(freq)
+            mutations[effect].extend(list(snpeffect[effect]))
         else:
-            mutations[effect] = freq
-
+            mutations[effect] = list(snpeffectct[effect])
 
 # sort frequency values
 for effect in mutations:
@@ -115,7 +115,7 @@ print('plotted CDF')
 # add label for the Y axis
 ax.set_ylabel('Cumulative fraction of mutations', size = 10, ha = 'center', fontname = 'Arial')
 # set x axis label
-ax.set_xlabel('Allele Frequency', size = 10, ha = 'center', fontname = 'Arial')
+ax.set_xlabel('Mutant allele Frequency', size = 10, ha = 'center', fontname = 'Arial')
 
 # do not show lines around figure, keep bottow line  
 ax.spines["top"].set_visible(False)    
@@ -170,16 +170,16 @@ print(labs)
 # plot legend
 ax.legend(lns, labs, loc=4, fontsize = 6, frameon = False)
 
-# build outputfile namewith parameters
-# extract the cancer name
-if which_files == 'singlefile' and sample == 'tumor':
-    cancer = HeteroSummaryFile[HeteroSummaryFile.index('_') + 1: HeteroSummaryFile.index('_' + sample)]
-elif which_files == 'singlefile' and sample == 'specific':
-    cancer = HeteroSummaryFile[HeteroSummaryFile.index('_') + 1: HeteroSummaryFile.index('_TumorSpecific')]
+## build outputfile namewith parameters
+## extract the cancer name
+#if which_files == 'singlefile' and sample == 'tumor':
+#    cancer = HeteroSummaryFile[HeteroSummaryFile.index('_') + 1: HeteroSummaryFile.index('_' + sample)]
+#elif which_files == 'singlefile' and sample == 'specific':
+#    cancer = HeteroSummaryFile[HeteroSummaryFile.index('_') + 1: HeteroSummaryFile.index('_TumorSpecific')]
+#
+#if which_files == 'singlefile':
+#    outputfile = 'CDFFreqMutations' + cancer + sample.capitalize() + '.pdf'
+#elif which_files == 'allfiles':
+#    outputfile = 'CDFFreqMutations' + sample.capitalize() + '.pdf'
 
-if which_files == 'singlefile':
-    outputfile = 'CDFFreqMutations' + cancer + sample.capitalize() + '.pdf'
-elif which_files == 'allfiles':
-    outputfile = 'CDFFreqMutations' + sample.capitalize() + '.pdf'
-
-fig.savefig(outputfile, bbox_inches = 'tight')
+fig.savefig('testfile.pdf', bbox_inches = 'tight')
