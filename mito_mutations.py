@@ -1272,3 +1272,104 @@ def ComputeHeteroplasmyFrequencyMutant(HeteroSummaryFile, threshold):
     
     return heteroplasmyfreq
      
+     
+     
+     
+################ edit below
+     
+     
+     
+# use this function to get germline genotypes of individuals at SNP rs1156878
+def GetMRPP3Genotypes(VCF_Folder):
+    '''
+    (str) -> dict
+    Read WGS VCF files in VCF_Folder and return a dictionary with individual name as key and 
+    genotype as value for position 35735967 in Hg19 (SNP rs11156878 in MRPP3)
+    Precondition: the VCF file cintains SNP only for a single individual
+    '''
+    
+    # create a dict {individual: genotype}
+    genotypes = {}
+    
+    # make a list of VCF files 
+    files = [i for i in os.listdir(VCF_Folder) if i[-4:] == '.vcf']    
+    # loop over files
+    for filename in files:
+        # open file for reading
+        infile = open(VCF_Folder + filename, 'r')
+        # extract individual ID
+        ID = filename[:filename.index('.')]
+        # loop over file
+        for line in infile:
+            # find the snp at MRPP3            
+            if line.startswith('14') and '35735967' in line:
+                line = line.rstrip().split()
+        
+        
+    ##### continue here        
+        
+        
+    
+    # open file for reading
+    infile = open(VCF_file, 'r')
+    # loop over file, find header with individual names
+    for line in infile:
+        if line.startswith('#CHROM'):
+            # process line to get IDs
+            header = line.rstrip().split()
+        if line.startswith('14') and '35735967' in line:
+            # process line
+            line = line.rstrip().split()
+            # exit loop, SNP is found
+            break
+    
+    
+    
+    
+14      35735967        .       A       G       625.6   PASS    .       GT:DP:DPR:RE:AR:GQ:ABP:SBP:RPB:PPB:PUR:RS:AD:GL:AVR     0/1:60:1.132:0.227:0.000:99:1.80:8.35:0.00:0.00:0.00:A,33,0.115,G,26,0.049,T,1,0.063:33,26:-62.56,0.00,-85.49:0.6540
+    
+    
+    
+    
+    
+    
+    # close file
+    infile.close()
+    
+    # parse line
+    # get SNP ID
+    snpid = line[2]
+    # get reference allele
+    ref = line[3].upper()
+    # get alternative allele
+    alt = line[4].upper()
+    # verify that ref and alt are valid nucleotides
+    if ref not in ['A', 'T', 'C', 'G'] and alt not in ['A', 'T', 'C', 'G']:
+        return -1
+    # check that site is variable
+    assert ref != alt, 'no variation is found at {0}'.format(snpid)
+    
+    # go through name ID
+    for i in range(9, len(header)):
+        # get name ID
+        ID = header[i]
+        # get the corresponding genotype
+        alleles = line[i][:line[i].index(':')]
+        # parse allele to find genotype
+        if '/' in alleles:
+            alleles = alleles.split('/')
+        elif '|' in alleles:
+            alleles = alleles.split('|')
+        # count the number of alleles, populate dict with genotype
+        # ref/ref or ref/alt or alt/alt, ignore individuals with missing data
+        if alleles.count('0') == 2:
+            # individual is homozygote ref
+            genotypes[ID] = ref + '/' + ref
+        elif alleles.count('1') == 2:
+            # individual is homozygote alt
+            genotypes[ID] = alt + '/' + alt
+        elif alleles.count('1') == 1 and alleles.count('0') == 1:
+            # individual is heterozygote
+            genotypes[ID] = ref + '/' + alt
+            
+    return genotypes   
