@@ -5,11 +5,13 @@ Created on Tue Jul  5 11:54:09 2016
 @author: RJovelin
 """
 
-# use this script to plot correlation between genotype at MRPP3 and RNA modif frequency
+# use this script to plot correlation between genotype at MRPP3 and RNA heteroplasmy frequency
 
 # usage PlotCorrelMRPP3GenotypeAltFreq [options]
-# -[altfreq, heterofreq]: plot alternative frequency in the population or heteroplasmy level within indivual
-# -[trna/allgenes]: consider only RNA modifications in tRNA or all genes
+# -[trna/P9/allgenes]: consider only RNA modifications in tRNA, modifs in tRNA P9 or all genes
+
+
+# place this script in folder HeteroPlasmyFilesRNAOnly with summary files
 
 # import matplotlib and change api to use on server
 import matplotlib as mpl
@@ -28,14 +30,65 @@ from mito_mutations import *
 
 
 
+# create a dict {individual: genotype}
+Genotypes = {}
+
+# make a list of tumor types with VCF files
+VCFTumor = ['COAD', 'OV', 'RECA-EU', 'UCEC', 'CESC', 'LGG', 'LIRI', 'SARC', 'STAD']
+
+# loop over tumor folders, unzip VCF files
+for folder in VCFTumor:
+    # make a list of gzip files    
+    if folder == 'STAD':
+        files = [i for i in os.listdir(folder + '/filteredVCFS') if i[-3:] == '.gz']
+    else:
+        files = [i for i in os.listdir(folder) if i[-3:] == '.gz']
+    if len(files) != 0:
+        # unzip files
+        if folder == 'STAD':
+            for filename in files:
+                os.system('gunzip ' + folder + '/filteredVCFS/' + filename)
+        else:
+            for filename in files:
+                os.system('gunzip ' + folder + '/' + filename)
+print('done unzipping VCF files')                
+
+
+
+            
+            
+            
+CESC: no subdir
+COAD: no subdir
+OV: no subdir
+RECA-EU: no subdir
+UCEC: no subdir
+LGG: no subdir
+LIRI: no subdir
+SARC: no subdir
+STAD: /RQusagers/rjovelin/awadalla_group/TCGA/VCFs/Germlines_vcf/perCancerType/STAD/
+
+           
+            
+
+# make a list of WGS normal files with corresponding individual ID and 
+
+# find the ID - VCF matchs
+
+# get the genotypes of MRPP3 at rs11156878 
+
+# get the heteroplasmy frequency for trna, p9 or all genes 
 
 
 
 
 
+/RQusagers/rjovelin/awadalla_group/TCGA/VCFs/Germlines_vcf/perCancerType
 
 
+/RQusagers/rjovelin/awadalla_group/TCGA/Mitoseek/mitoseek_hp1_mbq20
 
+/RQusagers/rjovelin/awadalla_group/TCGA/Mitoseek/mitoseek_hp1_mbq20/HeteroPlasmyFilesRNAOnly
 
 
 
