@@ -9,7 +9,7 @@ Created on Tue Jul  5 11:54:09 2016
 
 # usage PlotCorrelMRPP3GenotypeAltFreq [options]
 # -[altfreq, heterofreq]: plot alternative frequency in the population or heteroplasmy level within indivual
-
+# -[trna/allgenes]: consider only RNA modifications in tRNA or all genes
 
 # import matplotlib and change api to use on server
 import matplotlib as mpl
@@ -21,8 +21,20 @@ rc('mathtext', default='regular')
 # import built in modules
 import sys
 import os
+import numpy as np
+from scipy import stats
 # import custom modules
 from mito_mutations import *
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -35,10 +47,7 @@ from mito_mutations import *
 # outputfile : figure file
 # SNP ID: ID of the SNP with genotype
 
-import os
-import sys
-import matplotlib.pyplot as plt
-import numpy as np
+
 
 
 
