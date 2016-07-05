@@ -53,25 +53,35 @@ for folder in VCFTumor:
                 os.system('gunzip ' + folder + '/' + filename)
 print('done unzipping VCF files')                
 
+# make a list of WGS normal files with corresponding individual ID and 
+MatchFiles = [i for i in os.listdir() if 'WGS_NTOnly' in i]
+assert len(MatchFiles) == 9, 'there should be matching files for 9 tumors'
+
+# create a dict {BAM ID : individual ID} 
+MatchingIDs = {}
+for filename in MatchFiles:
+    infile = open(filename)
+    for line in infile:
+        if line.rstrip() != '':
+            line = line.rstrip().split('\t')
+            # get individual ID
+            Individual = line[0]
+            # get BAM ID
+            BamID = line[2]
+            BamID = BamID[BamID.index('wgsmito/') + len('wgsmito/'): BamID.index('.mito.')]
+            # populate dict
+            MatchingIDs[BamID] = Individual
+    infile.close()
+print('matched Bams with Individual IDs')
 
 
-            
-            
-            
-CESC: no subdir
-COAD: no subdir
-OV: no subdir
-RECA-EU: no subdir
-UCEC: no subdir
-LGG: no subdir
-LIRI: no subdir
-SARC: no subdir
-STAD: /RQusagers/rjovelin/awadalla_group/TCGA/VCFs/Germlines_vcf/perCancerType/STAD/
+
+ 
+
 
            
             
 
-# make a list of WGS normal files with corresponding individual ID and 
 
 # find the ID - VCF matchs
 
