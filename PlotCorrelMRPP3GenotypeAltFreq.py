@@ -84,6 +84,7 @@ print('matched Bams with Individual IDs', len(MatchingIDs))
 
 # loop over folders, extract MRPP3 genotypes of all individuals
 for folder in VCFTumor:
+    print(folder)
     # make a list of gzip files    
     if folder == 'STAD':
          mrpp3 = GetMRPP3Genotypes('../../../VCFs/Germlines_vcf/perCancerType/' + folder + '/filteredVCFS')
