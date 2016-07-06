@@ -26,7 +26,7 @@ import numpy as np
 from scipy import stats
 # import custom modules
 from mito_mutations import *
-
+print('done importing modules')
 
 # fix threshold to detect heteroplasmy to 1%
 threshold = 1
@@ -61,11 +61,13 @@ print('done unzipping VCF files')
 
 # make a list of WGS normal files with corresponding individual ID and 
 MatchFiles = [i for i in os.listdir('../') if 'WGS_NTOnly' in i]
+print(len(MatchFiles))
 assert len(MatchFiles) == 9, 'there should be matching files for 9 tumors'
 
 # create a dict {BAM ID : individual ID} 
 MatchingIDs = {}
 for filename in MatchFiles:
+    print(filename)
     infile = open('../' + filename)
     for line in infile:
         if line.rstrip() != '':
