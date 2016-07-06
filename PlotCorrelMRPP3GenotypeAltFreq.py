@@ -43,6 +43,7 @@ VCFTumor = ['COAD', 'OV', 'RECA-EU', 'UCEC', 'CESC', 'LGG', 'LIRI', 'SARC', 'STA
 
 # loop over tumor folders, unzip VCF files
 for folder in VCFTumor:
+    print(folder)
     # make a list of gzip files    
     if folder == 'STAD':
         files = [i for i in os.listdir('../../../VCFs/Germlines_vcf/perCancerType/' + folder + '/filteredVCFS') if i[-3:] == '.gz']
