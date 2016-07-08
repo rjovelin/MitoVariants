@@ -38,12 +38,14 @@ DataType = sys.argv[2]
 SampleType = sys.argv[3]
 
 
-
 # place this script in the folder with the heteroplasmy summary files
 
 # create a dict {participant: tumor}
 TumorID = {}
-PrepFiles = [i for i in os.listdir('../') if ('WGS' in i or 'RNAseq' in i) and 'Only' in i]
+if SampleType == 'tumor':
+    PrepFiles = [i for i in os.listdir('../') if ('WGS' in i or 'RNAseq' in i) and 'TPOnly' in i]
+elif SampleType == 'normal':
+    PrepFiles = [i for i in os.listdir('../') if ('WGS' in i or 'RNAseq' in i) and 'NTOnly' in i]    
 # loop over files
 for filename in PrepFiles:
     # extract cancer name from file
@@ -70,48 +72,56 @@ for folder in TumorTypes:
     print(folder)
     # get tumor name
     tumor_name = folder
-    # create a list of subfolders
-    subfolders = [i for i in os.listdir('../' + folder) if 'GRCH37' in i or 'RNASEQ' in i]
-    # removes files if files are inluded
-    to_delete = []
-    for i in subfolders:
-        try:
-            os.listdir('../' + folder + '/' + i)
-        except:
-            to_delete.append(i)
-    if len(to_delete) != 0:
-        for i in to_delete:
-            subfolders.remove(i)
-    print('# subfolders', len(subfolders))            
-    # loop over subfolders
-    for i in subfolders:
-        # get the participant ID
-        participant = i[:i.index('_')]
-        # get the position-read depth for that participant {position: number of reads}
-        reads = GetReadDepth('../' + folder + '/' + i + '/mito1_basecall.txt')
-        #  get the read counts
-        ReadCounts = [reads[j] for j in reads]
-        
-        # compute mean and median read counts
-        mean_reads = np.mean(ReadCounts)
-        median_reads = np.median(ReadCounts)
-        # populate dicts
-        if 'GRCH37' in i:
-            # check if participant in dict
-            if participant in ReadDepth:
-                ReadDepth[participant]['WGS'] = [mean_reads, median_reads, tumor_name]
-            else:
-                ReadDepth[participant] = {}
-                ReadDepth[participant]['WGS'] = [mean_reads, median_reads, tumor_name]
-        elif 'RNASEQ' in i:
-            # check if participant in dict
-            if participant in ReadDepth:
-                ReadDepth[participant]['RNAseq'] = [mean_reads, median_reads, tumor_name]
-            else:
-                ReadDepth[participant] = {}
-                ReadDepth[participant]['RNAseq'] = [mean_reads, median_reads, tumor_name]
-        
-print('computed mean and median read depth')
+    # make a list with rnaseq or wgs subfolders
+    if SampleType == 'normal':
+        subdir = ['NT_RNASeq', 'NT_WGS']    
+    elif SampleType == 'tumor':
+        subdir = ['TP_RNASeq', 'TP_WGS']
+    # loop over subdir:
+    for directory in subdir:
+        # create a list of subfolders with mitoseek outputs
+        if 'RNAseq' in directory:
+            subfolders = [i for i in os.listdir('../' + folder + '/' + directory) if 'RNASEQ' in i]
+        elif 'WGS' in directory:
+            subfolders = [i for i in os.listdir('../' + folder + '/' + directory) if 'GRCH37' in i]
+        # removes files if files are inluded
+        to_delete = []
+        for i in subfolders:
+            try:
+                os.listdir('../' + folder + '/' + directory + '/' + i)
+            except:
+                to_delete.append(i)
+        if len(to_delete) != 0:
+            for i in to_delete:
+                subfolders.remove(i)
+        print('# subfolders', len(subfolders))            
+        # loop over subfolders
+        for i in subfolders:
+            # get the participant ID
+            participant = i[:i.index('_')]
+            # get the position-read depth for that participant {position: number of reads}
+            reads = GetReadDepth('../' + folder + '/' + directory + '/' + i + '/mito1_basecall.txt')
+            #  make a list with the read counts
+            ReadCounts = [reads[j] for j in reads]
+            # populate dicts
+            if 'RNASeq' in directory:
+                assert 'RNASEQ' in i, 'subfolder should have RNAseq data'
+                # check if participant in dict
+                if participant in ReadDepth:
+                    ReadDepth[participant]['RNAseq'] = list(ReadCounts)
+                else:
+                    ReadDepth[participant] = {}
+                    ReadDepth[participant]['RNAseq'] = list(ReadCounts)
+            elif 'WGS' in directory in i:
+                assert 'GRCH37' in i, 'subfolder should have WGS data'
+                # check if participant in dict
+                if participant in ReadDepth:
+                    ReadDepth[participant]['WGS'] = list(ReadCounts)
+                else:
+                    ReadDepth[participant] = {}
+                    ReadDepth[participant]['WGS'] = list(ReadCounts)
+            
+print('got read depth for each individual')
 print('including unique samples', len(ReadDepth))
 # remove individuals that do not have paired samples
 to_remove = [i for i in ReadDepth if len(ReadDepth) != 2]
@@ -119,6 +129,15 @@ for i in to_remove:
     del ReadDepth[i]
 print('removed unique samples')
 print('including paired samples', len(ReadDepth))
+
+
+
+######## edit below
+######## record read depth, check parameter and plot either mean or median read depth per position or per individual
+
+
+
+
 
 
 # create a dict {tumor: [[wgs values], [rnaseq values]]}
