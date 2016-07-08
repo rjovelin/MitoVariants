@@ -11,7 +11,8 @@ Created on Thu Mar 10 15:00:13 2016
 
 # usage: PlotReadDepthRNAseqWGS.py [options]
 # - [mean/median]: plot mean or median read depth
-# -[PerIndividual/PerPosition]: plot read depth depth per individual or per position
+# - [PerIndividual/PerPosition]: plot read depth depth per individual or per position
+# - [normal/tumor]: plot read depth for normal or for tumor samples
 
 # import matplotlib and change api to use on server
 import matplotlib as mpl
@@ -31,14 +32,34 @@ from mito_mutations import *
 
 # get stats comparison
 StatsComp = sys.argv[1]
-# get date type
+# get data type
 DataType = sys.argv[2]
+# get sample type
+SampleType = sys.argv[3]
+
+
 
 # place this script in the folder with the heteroplasmy summary files
 
+# create a dict {participant: tumor}
+TumorID = {}
+PrepFiles = [i for i in os.listdir('../') if ('WGS' in i or 'RNAseq' in i) and 'Only' in i]
+# loop over files
+for filename in PrepFiles:
+    # extract cancer name from file
+    cancer = filename[:filename.index('_')]
+    # open file reading, loop over file, get participant IDs
+    infile = open('../' + filename)
+    for line in infile:
+        if line.rstrip() != '':
+            line = line.rstrip().split('\t')
+            participant = line[0]
+            TumorID[participant] = cancer
+    infile.close()
+print('matched participant and tumor type')
 
-# create a dict of dict to store mean and median read depth per individual and sample type
-# {participant: {'RNAseq': [mean_read_depth, median_read_depth, tumor]}, {'WGS': [mean_read_depth, median_read_depth, tumor]}}
+# create a dict of dict to store read depth per position for each sample
+# {participant: {'RNAseq': [read depth, read depth...]}, {'WGS': [read depth, read depth...]}}
 ReadDepth = {}
 
 # make a list of tumor types
@@ -66,10 +87,11 @@ for folder in TumorTypes:
     for i in subfolders:
         # get the participant ID
         participant = i[:i.index('_')]
-        # get the position-read depth for that participant
+        # get the position-read depth for that participant {position: number of reads}
         reads = GetReadDepth('../' + folder + '/' + i + '/mito1_basecall.txt')
         #  get the read counts
         ReadCounts = [reads[j] for j in reads]
+        
         # compute mean and median read counts
         mean_reads = np.mean(ReadCounts)
         median_reads = np.median(ReadCounts)
