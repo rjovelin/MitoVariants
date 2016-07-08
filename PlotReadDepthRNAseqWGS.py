@@ -10,11 +10,8 @@ Created on Thu Mar 10 15:00:13 2016
 
 
 # usage: PlotReadDepthRNAseqWGS.py [options]
-# - inputfile
-# - [mean/median]: plot mean or median read depth per individual
-# [all/paired]: use all data or paired WGS-RNAseq data (ie. for the same individuals)
-# - outputfile
-
+# - [mean/median]: plot mean or median read depth
+# -[PerIndividual/PerPosition]: plot read depth depth per individual or per position
 
 # import matplotlib and change api to use on server
 import matplotlib as mpl
@@ -32,160 +29,94 @@ from scipy import stats
 from mito_mutations import *
 
 
-# get summary file with read depth
-summary_file = sys.argv[1]
-# get data type
-data_type = sys.argv[2]
-# use all data or paired data for the same individuals
-individuals = sys.argv[3]
-# get the outputfile name
-outputfile = sys.argv[4]
+# get stats comparison
+StatsComp = sys.argv[1]
+# get date type
+DataType = sys.argv[2]
+
+# place this script in the folder with the heteroplasmy summary files
 
 
+# create a dict of dict to store mean and median read depth per individual and sample type
+# {participant: {'RNAseq': [mean_read_depth, median_read_depth, tumor]}, {'WGS': [mean_read_depth, median_read_depth, tumor]}}
+ReadDepth = {}
 
+# make a list of tumor types
+TumorTypes = ['COAD', 'LGG', 'LIRI', 'OV', 'CESC', 'SARC', 'STAD', 'UCEC', 'RECA']
 
-# place this script in the folder with the mitoseek subfolders
-
-# usage: python3 MakeSummaryCoverageFile.py [options]
-# - cancer_name
-# - [WGS/RNAseq]: sample type
-# [Refs/GRCH37]: if folder contains individuals with multiple refs or only GRCH37
-# - outputfile
-
-
-
-# get cancer name
-cancer_name = sys.argv[1]
-# get sample type
-sample_type = sys.argv[2]
-# get ref for individuals in folder
-reference = sys.argv[3]
-# get outputfile name
-outputfile = sys.argv[4]
-
-
-# check if file already exists
-try:
-    newfile = open(outputfile, 'r')
-except:
-    # write header if file does not exist
-    newfile = open(outputfile, 'w')
-    newfile.write('\t'.join(['participant', 'mean_read_depth', 'median_read_depth', 'tumor', 'sample_type']) + '\n')
-    print('content written to new file')
-else:
-    # if it exists, append content
-    newfile = open(outputfile, 'a')
-    print('content appended to existing file')
-
-
-# check if folders contains individuals with different refs or only GRCH37
-if reference == 'Refs':
-    # need to filter individuals not mapped to GRCH37
-    subfolders = GetValidReference('./')
-elif reference == 'GRCH37':
-    # only indivuals mapped to GRCH37 are included in current folder
-    subfolders = [i for i in os.listdir() if 'GRCH37' in i or 'RNASEQ' in i]
+# loop over cancer
+for folder in TumorTypes:
+    print(folder)
+    # get tumor name
+    tumor_name = folder
+    # create a list of subfolders
+    subfolders = [i for i in os.listdir('../' + folder) if 'GRCH37' in i or 'RNASEQ' in i]
     # removes files if files are inluded
     to_delete = []
     for i in subfolders:
         try:
-            os.listdir(i)
+            os.listdir('../' + folder + '/' + i)
         except:
             to_delete.append(i)
     if len(to_delete) != 0:
         for i in to_delete:
             subfolders.remove(i)
-
-print('# subfolders', len(subfolders))            
-# loop over subfolders
-for i in subfolders:
-    # get the participant ID
-    participant = i[:i.index('_')]
-    # get the position-read depth for that participant
-    reads = GetReadDepth(i + '/mito1_basecall.txt')
-    # get the read counts
-    ReadCounts = [reads[j] for j in reads]
-    # compute mean and median read counts
-    mean_reads = np.mean(ReadCounts)
-    median_reads = np.median(ReadCounts)
-    # write content to file
-    newfile.write('\t'.join([participant, str(mean_reads), str(median_reads), cancer_name, sample_type]) + '\n')
-
-# close file after writing
-newfile.close()            
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    print('# subfolders', len(subfolders))            
+    # loop over subfolders
+    for i in subfolders:
+        # get the participant ID
+        participant = i[:i.index('_')]
+        # get the position-read depth for that participant
+        reads = GetReadDepth('../' + folder + '/' + i + '/mito1_basecall.txt')
+        #  get the read counts
+        ReadCounts = [reads[j] for j in reads]
+        # compute mean and median read counts
+        mean_reads = np.mean(ReadCounts)
+        median_reads = np.median(ReadCounts)
+        # populate dicts
+        if 'GRCH37' in i:
+            # check if participant in dict
+            if participant in ReadDepth:
+                ReadDepth[participant]['WGS'] = [mean_reads, median_reads, tumor_name]
+            else:
+                ReadDepth[participant] = {}
+                ReadDepth[participant]['WGS'] = [mean_reads, median_reads, tumor_name]
+        elif 'RNASEQ' in i:
+            # check if participant in dict
+            if participant in ReadDepth:
+                ReadDepth[participant]['RNAseq'] = [mean_reads, median_reads, tumor_name]
+            else:
+                ReadDepth[participant] = {}
+                ReadDepth[participant]['RNAseq'] = [mean_reads, median_reads, tumor_name]
+        
+print('computed mean and median read depth')
+print('including unique samples', len(ReadDepth))
+# remove individuals that do not have paired samples
+to_remove = [i for i in ReadDepth if len(ReadDepth) != 2]
+for i in to_remove:
+    del ReadDepth[i]
+print('removed unique samples')
+print('including paired samples', len(ReadDepth))
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# create a dict {tumor: set(individuals with paired samples)}
-PairedSamples = {}
-# open file for reading
-infile = open(summary_file, 'r')
-# skip header
-infile.readline()
-for line in infile:
-    line = line.rstrip()
-    if line != '':
-        line = line.split('\t')
-        # get tumor
-        tumor = line[3]
-        # get participant
-        participant = line[0]
-        # populate dict
-        if tumor not in PairedSamples:
-            PairedSamples[tumor] = []
-        # add participant to list
-        PairedSamples[tumor].append(participant)
-infile.close()
-
-# remove individuals with unique data
-for tumor in PairedSamples:
-    to_delete = [participant for participant in PairedSamples[tumor] if PairedSamples[tumor].count(participant) == 1]
-    for participant in to_delete:
-        PairedSamples[tumor].remove(participant)
-
-# parse file to extract read depth values
-# open file for reading
-infile = open(summary_file, 'r')
-# skip header
-infile.readline()
 # create a dict {tumor: [[wgs values], [rnaseq values]]}
+Coverage = {}
+for participant in ReadDepth:
+    # get the tumor name
+    tumor_name = ReadDepth[participant]['WGS'][-1]
+    assert tumor_name == ReadDepth[participant]['RNAseq'][-1], 'tumor names do not match'
+    # check if tumor name in dict
+    if tumor_name in Coverage:
+        # check if plot median or mean
+        
+
+
+
+
+
+
+
+
 ReadDepth = {}
 # loop over file
 for line in infile:
