@@ -61,7 +61,10 @@ for filename in files:
     polymorphism = GenomePositionsPic(filename)
     # add PIC values to dict
     for i in polymorphism:
-        Polym[i].extend(polymorphism[i])
+        if i in Polym:
+            Polym[i].extend(list(polymorphism[i]))
+        else:
+            Polym[i] = list(polymorphism[i])
         
 # create a list of positions
 positions = [i for i in Polym]
