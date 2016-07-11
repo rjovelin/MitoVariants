@@ -161,51 +161,34 @@ for tumor_name in Coverage:
 
 # make a box plot figure comparing read depth betweem WGS and RNAseq for each cancer
 
-
 # make a list of tumor names
-tumor_names = [i for i in ReadDepth]
-tumor_names.sort()
+TumorNames = [i for i in Coverage]
+TumorNames.sort()
 
 # combine data to a single list
 all_data = []
-for tumor in tumor_names:
+for name in TumorNames:
     # append list with wgs values
-    all_data.append(ReadDepth[tumor][0])
+    all_data.append(Coverage[name][0])
     # append list with RNAseq values
-    all_data.append(ReadDepth[tumor][1])
+    all_data.append(Coverage[name][1])
 
 # create figure
-fig = plt.figure(1, figsize = (4.3,2.56))
+fig = plt.figure(1, figsize = (5, 3))
 
 # add a plot to figure (1 row, 1 column, 1 plot)
 ax = fig.add_subplot(1, 1, 1)    
 
-# write label for y axis
-ytext = ax.set_ylabel('Read depth', color = 'black', size = 10, ha = 'center', fontname = 'Arial', family = 'sans-serif')
-xtext = ax.set_xlabel('Tumor types', color = 'black', size = 10, ha = 'center', fontname = 'Arial', family = 'sans-serif')
-
-names = []
-for tumor in tumor_names:
-    names.append(tumor + '_WGS')
-    names.append(tumor + '_RNA')
-
-
-# add labels to x-ticks, rotate and align right, set size to 14
-ax.set_xticklabels(names, rotation = 30, ha = 'right', size = 10, fontname = 'Arial', family = 'sans-serif')
-
-
-# add a light grey horizontal grid to the plot, semi-transparent, 
-ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)  
-# hide these grids behind plot objects
-ax.set_axisbelow(True)
-
-# remove top axes and right axes ticks
-ax.get_xaxis().tick_bottom()
-ax.get_yaxis().tick_left()
-
-
 # use a boxplot
-bp = ax.boxplot(all_data, showmeans = True, showfliers = False, widths = 0.7, labels = names, patch_artist = True) 
+bp = ax.boxplot(all_data, showmeans = True, showfliers = False, widths = 0.3, positions = [0, 0.3,
+                                                                                           0.5, 0.8,
+                                                                                           1, 1.3,
+                                                                                           1.5, 1.8,
+                                                                                           2, 2.3,
+                                                                                           2.5, 2.8,
+                                                                                           3, 3.3,
+                                                                                           3.5, 3.8,
+                                                                                           4, 4.3], patch_artist = True) 
     
 # color WGS boxes in grey
 i = 0    
@@ -215,11 +198,11 @@ for box in bp['boxes']:
     box.set(color = 'black')
     if i % 2 == 0:
         # WGS data, color box 
-        box.set(facecolor = [1, 0.722, 0.384])
+        box.set(facecolor = '#1f78b4')
     else:
-        box.set(facecolor = [0.753, 0.949, 0.467])
+        box.set(facecolor = '#b2df8a')
     i += 1
-        
+      
 # change whisker color ro black
 for wk in bp['whiskers']:
     wk.set(color = 'black', linestyle = '-')
@@ -235,19 +218,37 @@ for median in bp['medians']:
 # change the mean marker and marker
 for mean in bp['means']:
     mean.set(marker = 'o', markeredgecolor = 'black', markerfacecolor = 'black', markersize = 4)
-    
+
+
+# change font name
+
+# write label for y axis
+ytext = ax.set_ylabel('Read depth', color = 'black', size = 10, ha = 'center', fontname = 'Arial', family = 'sans-serif')
+xtext = ax.set_xlabel('Tumor types', color = 'black', size = 10, ha = 'center', fontname = 'Arial', family = 'sans-serif')
+
+# create a list of tick positions
+xtickpos = [0.3, 0.8, 1.3, 1.8, 2.3, 2.8, 3.3, 3.8, 4.3]
+
+## add labels to x-ticks, rotate and align right, set size to 14
+#ax.set_xticklabels(names, rotation = 30, ha = 'right', size = 10, fontname = 'Arial', family = 'sans-serif')
+
+plt.xticks(xtickpos, TumorNames, fontsize = 10, fontname = 'Arial')
+
+
+# add a light grey horizontal grid to the plot, semi-transparent, 
+ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)  
+# hide these grids behind plot objects
+ax.set_axisbelow(True)
 
 # do not show lines around figure  
 ax.spines["top"].set_visible(False)    
-ax.spines["bottom"].set_visible(False)    
+ax.spines["bottom"].set_visible(True)    
 ax.spines["right"].set_visible(False)    
 ax.spines["left"].set_visible(False)  
+# offset the spines
+for spine in ax.spines.values():
+  spine.set_position(('outward', 5))
 
-
-# create a list with range of x-axis values
-xvals = [i + 0.5 for i in range(len(names) + 1)]
-# Set a buffer around the edge of the x-axis
-plt.xlim([min(xvals)- 0.5, max(xvals)+ 0.5])
 
 # do not show ticks
 plt.tick_params(
@@ -274,24 +275,23 @@ plt.tick_params(
     colors = 'black',
     labelsize = 10)
 
-
 # Set the tick labels font name
 for label in ax.get_yticklabels():
     label.set_fontname('Arial')
     
 
 # add jittered data points to box plots (when data points are not too numerous)
-
-i = 0
-for j in range(len(all_data)):
-    k = np.random.uniform(-0.2, 0.2, len(all_data[j])) + (i+1)
-    if (i+1) % 2 == 0:
-        plt.plot(k, all_data[j], 'o', markersize = 2, markeredgecolor = [0, 0.518, 0.176],
-                 markeredgewidth = 1.5, markerfacecolor = [0, 0.518, 0.176], alpha = 0.4)
-    else:
-        plt.plot(k, all_data[j], 'o', markersize = 2, markeredgecolor = [0.957, 0.631, 0],
-                 markeredgewidth = 1.5, markerfacecolor = [0.957, 0.631, 0] , alpha = 0.4)
-    i += 1
+if DataType == 'PerIndividual':
+    i = 0
+    for j in range(len(all_data)):
+        k = np.random.uniform(-0.2, 0.2, len(all_data[j])) + (i+1)
+        if (i+1) % 2 == 0:
+            plt.plot(k, all_data[j], 'o', markersize = 2, markeredgecolor = '#1f78b4',
+                     markeredgewidth = 1.5, markerfacecolor = '#1f78b4', alpha = 0.4)
+        else:
+            plt.plot(k, all_data[j], 'o', markersize = 2, markeredgecolor = '#b2df8a',
+                     markeredgewidth = 1.5, markerfacecolor = '#b2df8a', alpha = 0.4)
+        i += 1
 
 
 # annotate figure to add significance
@@ -306,6 +306,7 @@ y_min, y_max = min(yvalues), max(yvalues)
 for i in range(0, len(all_data), 2):
     # get the P value of Wilcoxon rank sum test
     Pval = stats.ranksums(all_data[i], all_data[i+1])[1]
+    print(i, i+1, Pval)
     # get stars for significance
     if Pval > 0.05:
         P = 'N.S.'
@@ -334,7 +335,7 @@ for i in range(0, len(all_data), 2):
 plt.title('Read depth between WGS and RNAseq\n', size = 10, fontname = 'Arial')  
   
 # save figure
-fig.savefig(outputfile, bbox_inches = 'tight')
+fig.savefig('testfile.pdf', bbox_inches = 'tight')
     
     
     
