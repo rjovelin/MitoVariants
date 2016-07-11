@@ -61,7 +61,6 @@ for filename in files:
     polymorphism = GenomePositionsPic(filename)
     # add PIC values to dict
     for i in polymorphism:
-        assert i in Polym, 'position should be already recorded'
         Polym[i].extend(polymorphism[i])
         
 # create a list of positions
