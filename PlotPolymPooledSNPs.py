@@ -46,6 +46,7 @@ elif sample == 'specific':
 
 # create a set of SNPs among all tumor types
 AllSnps = PoolVariablePositions(files)
+print('all snps', len(AllSnps))
 
 # get the positions of each mitochiondrial genes and regions
 mito_genes = MitoAnnotation('rCRS_genes_MT.text.txt')
@@ -59,15 +60,16 @@ for i in AllSnps:
 for filename in files:
     # compute PIC for each individual at each position
     polymorphism = GenomePositionsPic(filename)
+    print(filename, len(polymorphism))
     # add PIC values to dict
     for i in polymorphism:
         if i in Polym:
             Polym[i].extend(list(polymorphism[i]))
-        else:
-            Polym[i] = list(polymorphism[i])
+        
         
 # create a list of positions
 positions = [i for i in Polym]
+positions.sort()
 
 # check which color panel to use
 # create a dict with gene : color
@@ -139,9 +141,9 @@ ax.set_ylim([0, 1])
             
 # set title
 if sample == 'tumor':
-    ax.set_title('Shared heteroplasmies across tumor types\n', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
+    ax.set_title('Pooled heteroplasmies across tumor types\n', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
 elif sample == 'specific':
-    ax.set_title('Shared tumor-specific heteroplasmies\n', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
+    ax.set_title('Pooled tumor-specific heteroplasmies\n', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
 
 # set y axis label
 ax.set_ylabel('Polymorphism Information Content', size = 10, ha = 'center', fontname = 'Helvetica', family = 'sans-serif')
