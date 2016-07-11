@@ -99,27 +99,29 @@ for folder in TumorTypes:
         for i in subfolders:
             # get the participant ID
             participant = i[:i.index('_')]
-            # get the position-read depth for that participant {position: number of reads}
-            reads = GetReadDepth('../' + folder + '/' + directory + '/' + i + '/mito1_basecall.txt')
-            #  make a list with the read counts
-            ReadCounts = [reads[j] for j in reads]
-            # populate dicts
-            if 'RNASeq' in directory:
-                assert 'RNASEQ' in i, 'subfolder should have RNAseq data'
-                # check if participant in dict
-                if participant in ReadDepth:
-                    ReadDepth[participant]['RNAseq'] = list(ReadCounts)
-                else:
-                    ReadDepth[participant] = {}
-                    ReadDepth[participant]['RNAseq'] = list(ReadCounts)
-            elif 'WGS' in directory in i:
-                assert 'GRCH37' in i, 'subfolder should have WGS data'
-                # check if participant in dict
-                if participant in ReadDepth:
-                    ReadDepth[participant]['WGS'] = list(ReadCounts)
-                else:
-                    ReadDepth[participant] = {}
-                    ReadDepth[participant]['WGS'] = list(ReadCounts)
+            # check that mitoseek ran correctly and that output has base call file
+            if 'mito1_basecall.txt' in os.list('../' + folder + '/' + directory + '/' + i + '/'):
+                # get the position-read depth for that participant {position: number of reads}
+                reads = GetReadDepth('../' + folder + '/' + directory + '/' + i + '/mito1_basecall.txt')
+                #  make a list with the read counts
+                ReadCounts = [reads[j] for j in reads]
+                # populate dicts
+                if 'RNASeq' in directory:
+                    assert 'RNASEQ' in i, 'subfolder should have RNAseq data'
+                    # check if participant in dict
+                    if participant in ReadDepth:
+                        ReadDepth[participant]['RNAseq'] = list(ReadCounts)
+                    else:
+                        ReadDepth[participant] = {}
+                        ReadDepth[participant]['RNAseq'] = list(ReadCounts)
+                elif 'WGS' in directory in i:
+                    assert 'GRCH37' in i, 'subfolder should have WGS data'
+                    # check if participant in dict
+                    if participant in ReadDepth:
+                        ReadDepth[participant]['WGS'] = list(ReadCounts)
+                    else:
+                        ReadDepth[participant] = {}
+                        ReadDepth[participant]['WGS'] = list(ReadCounts)
             
 print('got read depth for each individual')
 print('including unique samples', len(ReadDepth))
