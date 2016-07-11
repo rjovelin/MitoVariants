@@ -131,73 +131,34 @@ print('removed unique samples')
 print('including paired samples', len(ReadDepth))
 
 
-
-######## edit below
-######## record read depth, check parameter and plot either mean or median read depth per position or per individual
-
-
-
-
-
-
 # create a dict {tumor: [[wgs values], [rnaseq values]]}
 Coverage = {}
 for participant in ReadDepth:
     # get the tumor name
-    tumor_name = ReadDepth[participant]['WGS'][-1]
-    assert tumor_name == ReadDepth[participant]['RNAseq'][-1], 'tumor names do not match'
-    # check if tumor name in dict
-    if tumor_name in Coverage:
-        # check if plot median or mean
-        
+    tumor_name = TumorID[participant]
+    # check if tumor name is key in dict
+    if tumor_name not in Coverage:
+        # initialize list value
+        Coverage[tumor_name] = [[], []]
+    # populate list values
+    # check if record read depth per individual or per position
+    if DataType == 'PerIndividual':
+        # check if record mean or median read depth per individual
+        if StatsComp == 'median':
+            # add median read depth for WGS and RNAseq
+            Coverage[tumor_name][0].append(np.median(ReadDepth[participant]['WGS']))
+            Coverage[tumor_name][1].append(np.median(ReadDepth[participant]['RNAseq']))
+        elif StatsComp == 'mean':
+            Coverage[tumor_name][0].append(np.mean(ReadDepth[participant]['WGS']))
+            Coverage[tumor_name][1].append(np.mean(ReadDepth[participant]['RNAseq']))    
+    elif DataType == 'PerPosition':
+        Coverage[tumor_name][0].extend(list(ReadDepth[participant]['WGS']))    
+        Coverage[tumor_name][1].extend(list(ReadDepth[participant]['RNAseq']))
+print('recorded read depth per tumor', len(Coverage))
+for tumor_name in Coverage:
+    print(tumor_name, len(Coverage[tumor_name]['WGS']), len(Coverage[tumor_name]['RNAseq']))   
+                
 
-
-
-
-
-
-
-
-ReadDepth = {}
-# loop over file
-for line in infile:
-    line = line.rstrip()
-    if line != '':
-        line = line.split('\t')
-        # get participant
-        participant = line[0]
-        # check data type
-        if data_type == 'mean':
-            # record mean read depth
-            data = float(line[1])
-        elif data_type == 'median':
-            data = float(line[2])
-        # get tumor
-        tumor = line[3]
-        # get sample type
-        sample_type = line[-1]
-        # set up boolean
-        RecordParticipant = False
-        # check if using all individuals or individuals with paired data
-        if individuals == 'paired':
-            if participant in PairedSamples[tumor]:
-                RecordParticipant = True
-        elif individuals == 'all':
-            RecordParticipant = True
-        # check if participant is to be recorded
-        if RecordParticipant:
-            # populate dict
-            # initialize key-value pairs 
-            if tumor not in ReadDepth:
-                ReadDepth[tumor] = [[], []]
-            # check sample_type
-            if sample_type == 'WGS':
-                ReadDepth[tumor][0].append(data)
-            elif sample_type == 'RNAseq':
-                ReadDepth[tumor][1].append(data)
-infile.close()            
-            
-        
 # make a box plot figure comparing read depth betweem WGS and RNAseq for each cancer
 
 
