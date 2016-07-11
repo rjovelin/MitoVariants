@@ -100,7 +100,7 @@ for folder in TumorTypes:
             # get the participant ID
             participant = i[:i.index('_')]
             # check that mitoseek ran correctly and that output has base call file
-            if 'mito1_basecall.txt' in os.list('../' + folder + '/' + directory + '/' + i + '/'):
+            if 'mito1_basecall.txt' in os.listdir('../' + folder + '/' + directory + '/' + i + '/'):
                 # get the position-read depth for that participant {position: number of reads}
                 reads = GetReadDepth('../' + folder + '/' + directory + '/' + i + '/mito1_basecall.txt')
                 #  make a list with the read counts
