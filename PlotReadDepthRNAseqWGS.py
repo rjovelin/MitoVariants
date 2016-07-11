@@ -80,7 +80,7 @@ for folder in TumorTypes:
     # loop over subdir:
     for directory in subdir:
         # create a list of subfolders with mitoseek outputs
-        if 'RNAseq' in directory:
+        if 'RNASeq' in directory:
             subfolders = [i for i in os.listdir('../' + folder + '/' + directory) if 'RNASEQ' in i]
         elif 'WGS' in directory:
             subfolders = [i for i in os.listdir('../' + folder + '/' + directory) if 'GRCH37' in i]
