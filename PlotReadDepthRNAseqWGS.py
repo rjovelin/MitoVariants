@@ -126,7 +126,7 @@ for folder in TumorTypes:
 print('got read depth for each individual')
 print('including unique samples', len(ReadDepth))
 # remove individuals that do not have paired samples
-to_remove = [i for i in ReadDepth if len(ReadDepth) != 2]
+to_remove = [i for i in ReadDepth if len(ReadDepth[i]) != 2]
 for i in to_remove:
     del ReadDepth[i]
 print('removed unique samples')
