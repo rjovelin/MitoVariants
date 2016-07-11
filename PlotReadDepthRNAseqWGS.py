@@ -176,21 +176,21 @@ for name in TumorNames:
     all_data.append(Coverage[name][1])
 
 # create figure
-fig = plt.figure(1, figsize = (5, 3))
+fig = plt.figure(1, figsize = (11, 5))
 
 # add a plot to figure (1 row, 1 column, 1 plot)
 ax = fig.add_subplot(1, 1, 1)    
 
 # use a boxplot
-bp = ax.boxplot(all_data, showmeans = True, showfliers = False, widths = 0.3, positions = [0, 0.3,
-                                                                                           0.5, 0.8,
-                                                                                           1, 1.3,
-                                                                                           1.5, 1.8,
-                                                                                           2, 2.3,
-                                                                                           2.5, 2.8,
-                                                                                           3, 3.3,
-                                                                                           3.5, 3.8,
-                                                                                           4, 4.3], patch_artist = True) 
+bp = ax.boxplot(all_data, showmeans = True, showfliers = False, widths = 0.5, positions = [0, 0.5,
+                                                                                           1.2, 1.7,
+                                                                                           2.4, 2.9,
+                                                                                           3.6, 4.1,
+                                                                                           4.8, 5.3,
+                                                                                           6, 6.5,
+                                                                                           7.2, 7.7,
+                                                                                           8.4, 8.9,
+                                                                                           9.6, 10.1], patch_artist = True) 
     
 # color WGS boxes in grey
 i = 0    
@@ -229,7 +229,7 @@ ytext = ax.set_ylabel('Read depth', color = 'black', size = 10, ha = 'center', f
 xtext = ax.set_xlabel('Tumor types', color = 'black', size = 10, ha = 'center', fontname = 'Arial', family = 'sans-serif')
 
 # create a list of tick positions
-xtickpos = [0.3, 0.8, 1.3, 1.8, 2.3, 2.8, 3.3, 3.8, 4.3]
+xtickpos = [0.5, 1.7, 2.9, 4.1, 5.3, 6.5, 7.7, 8.9, 10.1]
 
 ## add labels to x-ticks, rotate and align right, set size to 14
 #ax.set_xticklabels(names, rotation = 30, ha = 'right', size = 10, fontname = 'Arial', family = 'sans-serif')
@@ -296,40 +296,40 @@ if DataType == 'PerIndividual':
         i += 1
 
 
-# annotate figure to add significance
-# get the x and y coordinates
-yvalues = []
-for i in range(len(all_data)):
-    yvalues.extend(all_data[i])
-# get max and min y values
-y_min, y_max = min(yvalues), max(yvalues)
-
-# compare read depth between WGS and RNAseq for each cancer
-for i in range(0, len(all_data), 2):
-    # get the P value of Wilcoxon rank sum test
-    Pval = stats.ranksums(all_data[i], all_data[i+1])[1]
-    print(i, i+1, Pval)
-    # get stars for significance
-    if Pval > 0.05:
-        P = 'N.S.'
-    elif Pval < 0.05 and Pval > 0.01:
-        P = '*'
-    elif Pval < 0.01 and Pval > 0.001:
-        P = '**'
-    elif Pval < 0.001:
-        P = '***'
-    
-    # add bracket
-    ax.annotate("", xy=(i+1, y_max + 200), xycoords='data', xytext=(i+2, y_max + 200),
-                textcoords='data', arrowprops=dict(arrowstyle="-", ec='#aaaaaa',
-                connectionstyle="bar,fraction=0.2", linewidth = 0.75))
-    # add stars for significance
-    if P == 'N.S.':
-        ax.text(i + 1.5, y_max + abs(y_max - y_min)*0.08, P, horizontalalignment='center',
-                verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
-    else:
-        ax.text(i + 1.5, y_max + abs(y_max - y_min)*0.05, P, horizontalalignment='center',
-                verticalalignment='center', color = 'grey', fontname = 'Arial')
+## annotate figure to add significance
+## get the x and y coordinates
+#yvalues = []
+#for i in range(len(all_data)):
+#    yvalues.extend(all_data[i])
+## get max and min y values
+#y_min, y_max = min(yvalues), max(yvalues)
+#
+## compare read depth between WGS and RNAseq for each cancer
+#for i in range(0, len(all_data), 2):
+#    # get the P value of Wilcoxon rank sum test
+#    Pval = stats.ranksums(all_data[i], all_data[i+1])[1]
+#    print(i, i+1, Pval)
+#    # get stars for significance
+#    if Pval > 0.05:
+#        P = 'N.S.'
+#    elif Pval < 0.05 and Pval > 0.01:
+#        P = '*'
+#    elif Pval < 0.01 and Pval > 0.001:
+#        P = '**'
+#    elif Pval < 0.001:
+#        P = '***'
+#    
+#    # add bracket
+#    ax.annotate("", xy=(i+1, y_max + 200), xycoords='data', xytext=(i+2, y_max + 200),
+#                textcoords='data', arrowprops=dict(arrowstyle="-", ec='#aaaaaa',
+#                connectionstyle="bar,fraction=0.2", linewidth = 0.75))
+#    # add stars for significance
+#    if P == 'N.S.':
+#        ax.text(i + 1.5, y_max + abs(y_max - y_min)*0.08, P, horizontalalignment='center',
+#                verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
+#    else:
+#        ax.text(i + 1.5, y_max + abs(y_max - y_min)*0.05, P, horizontalalignment='center',
+#                verticalalignment='center', color = 'grey', fontname = 'Arial')
 
 
 
