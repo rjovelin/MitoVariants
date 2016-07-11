@@ -158,7 +158,7 @@ for participant in ReadDepth:
         Coverage[tumor_name][1].extend(list(ReadDepth[participant]['RNAseq']))
 print('recorded read depth per tumor', len(Coverage))
 for tumor_name in Coverage:
-    print(tumor_name, len(Coverage[tumor_name]['WGS']), len(Coverage[tumor_name]['RNAseq']))   
+    print(tumor_name, len(Coverage[tumor_name][0]), len(Coverage[tumor_name][1]))   
                 
 
 # make a box plot figure comparing read depth betweem WGS and RNAseq for each cancer
