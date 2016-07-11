@@ -61,7 +61,6 @@ print('done unzipping VCF files')
 
 # make a list of WGS normal files with corresponding individual ID and 
 MatchFiles = [i for i in os.listdir('../') if 'WGS_NTOnly' in i]
-print(len(MatchFiles))
 assert len(MatchFiles) == 9, 'there should be matching files for 9 tumors'
 
 # create a dict {BAM ID : individual ID} 
@@ -87,9 +86,9 @@ for folder in VCFTumor:
     print(folder)
     # make a list of gzip files    
     if folder == 'STAD':
-         mrpp3 = GetMRPP3Genotypes('../../../VCFs/Germlines_vcf/perCancerType/' + folder + '/filteredVCFS')
+         mrpp3 = GetMRPP3Genotypes('../../../VCFs/Germlines_vcf/perCancerType/' + folder + '/filteredVCFS/')
     else:
-        mrpp3 = GetMRPP3Genotypes('../../../VCFs/Germlines_vcf/perCancerType/' + folder)
+        mrpp3 = GetMRPP3Genotypes('../../../VCFs/Germlines_vcf/perCancerType/' + folder + '/')
     # populate Genotypes dict with individual ID
     ID = [i for i in mrpp3]
     assert len(ID) == 1, 'there should be a single indivual'
