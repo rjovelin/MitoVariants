@@ -94,7 +94,7 @@ for folder in TumorTypes:
         if len(to_delete) != 0:
             for i in to_delete:
                 subfolders.remove(i)
-        print('# subfolders', len(subfolders))            
+        print('# subfolders', directory, len(subfolders))            
         # loop over subfolders
         for i in subfolders:
             # get the participant ID
@@ -114,7 +114,7 @@ for folder in TumorTypes:
                     else:
                         ReadDepth[participant] = {}
                         ReadDepth[participant]['RNAseq'] = list(ReadCounts)
-                elif 'WGS' in directory in i:
+                elif 'WGS' in directory:
                     assert 'GRCH37' in i, 'subfolder should have WGS data'
                     # check if participant in dict
                     if participant in ReadDepth:
