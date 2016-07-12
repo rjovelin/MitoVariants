@@ -215,16 +215,17 @@ for mean in bp['means']:
     mean.set(marker = 'o', markeredgecolor = 'black', markerfacecolor = 'black', markersize = 4)
 
 
-# change font name
+# set font for all text in figure
+FigFont = {'fontname':'Helvetica'}
 
 # write label for y axis
-ytext = ax.set_ylabel('Read depth', color = 'black', size = 10, ha = 'center', fontname = 'Arial', family = 'sans-serif')
-xtext = ax.set_xlabel('Tumor types', color = 'black', size = 10, ha = 'center', fontname = 'Arial', family = 'sans-serif')
+ytext = ax.set_ylabel('Read depth', color = 'black', size = 10, ha = 'center', **FigFont)
+xtext = ax.set_xlabel('Tumor types', color = 'black', size = 10, ha = 'center', **FigFont)
 
 # create a list of tick positions
 xtickpos = [0.15, 0.95, 1.75, 2.55, 3.35, 4.15, 4.95, 5.75, 6.55] 
 # add x labels
-plt.xticks(xtickpos, TumorNames, fontsize = 10, fontname = 'Arial')
+plt.xticks(xtickpos, TumorNames, fontsize = 10, **FigFont)
 
 # do not show lines around figure  
 ax.spines["top"].set_visible(False)    
@@ -267,7 +268,7 @@ plt.tick_params(
 
 # Set the tick labels font name
 for label in ax.get_yticklabels():
-    label.set_fontname('Arial')
+    label.set_fontname('Helvetica')
     
 
 # add jittered data points to box plots (when data points are not too numerous)
@@ -285,20 +286,20 @@ if DataType == 'PerIndividual':
 
 # add title
 if DataType == 'PerIndividual' and StatsComp == 'median':
-    plt.title('Median read depth per individual for WGS and RNAseq\n', size = 10, fontname = 'Arial')  
+    plt.title('Median read depth per individual for WGS and RNAseq\n', size = 10, **FigFont)  
 elif DataType == 'PerIndividual' and StatsComp == 'mean':
-    plt.title('Mean read depth per individual for WGS and RNAseq\n', size = 10, fontname = 'Arial')
+    plt.title('Mean read depth per individual for WGS and RNAseq\n', size = 10, **FigFont)
 elif DataType == 'PerPosition':
-    plt.title('Read depth per position for WGS and RNAseq\n', size = 10, fontname = 'Arial')
+    plt.title('Read depth per position for WGS and RNAseq\n', size = 10, **FigFont)
   
-  
-  
+# add a margin around x axis
+plt.margins(0.05)
+
+# create legend
+WGS = mpatches.Patch(facecolor = '#1f78b4' , edgecolor = 'black', linewidth = 1, label= 'WGS')
+RNASeq = mpatches.Patch(facecolor = '#b2df8a', edgecolor = 'black', linewidth = 1, label = 'RNASeq')
+plt.legend(handles=[WGS, RNASeq], loc = 2, fontsize = 8, frameon = False, **FigFont)
+
 # save figure
 fig.savefig('testfile.pdf', bbox_inches = 'tight')
     
-    
-    
-    
-    
-    
-   
