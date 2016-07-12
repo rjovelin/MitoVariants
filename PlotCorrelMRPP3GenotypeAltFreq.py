@@ -84,19 +84,15 @@ print('matched Bams with Individual IDs', len(MatchingIDs))
 # loop over folders, extract MRPP3 genotypes of all individuals
 for folder in VCFTumor:
     print(folder)
-    # make a list of gzip files    
     if folder == 'STAD':
          mrpp3 = GetMRPP3Genotypes('../../../VCFs/Germlines_vcf/perCancerType/' + folder + '/filteredVCFS/')
     else:
         mrpp3 = GetMRPP3Genotypes('../../../VCFs/Germlines_vcf/perCancerType/' + folder + '/')
     # populate Genotypes dict with individual ID
-    ID = [i for i in mrpp3]
-    assert len(ID) == 1, 'there should be a single indivual'
-    ID = ID[0]
-    if ID in MatchingIDs:
-        Genotypes[MatchingIDs[ID]] = mrpp3[ID]
+    for ID in mrpp3:
+        if ID in MatchingIDs:
+            Genotypes[MatchingIDs[ID]] = mrpp3[ID]
 print('extracted MRPP3 genotype', len(Genotypes))                
-    
 
 # get the heteroplasmy frequency for trna, p9 or all genes 
 

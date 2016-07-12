@@ -1279,7 +1279,7 @@ def GetMRPP3Genotypes(VCF_Folder):
     (str) -> dict
     Read WGS VCF files in VCF_Folder and return a dictionary with individual name as key and 
     genotype as value for position 35735967 in Hg19 (SNP rs11156878 in MRPP3)
-    Precondition: the VCF file cintains SNP only for a single individual
+    Precondition: the VCF file contains SNP only for a single individual
     '''
     
     # create a dict {individual: genotype}
@@ -1289,6 +1289,7 @@ def GetMRPP3Genotypes(VCF_Folder):
     files = [i for i in os.listdir(VCF_Folder) if i[-4:] == '.vcf']    
     # loop over files
     for filename in files:
+        print(filename)
         # open file for reading
         infile = open(VCF_Folder + filename, 'r')
         # extract individual ID
