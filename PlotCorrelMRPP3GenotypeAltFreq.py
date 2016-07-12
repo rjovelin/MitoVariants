@@ -207,10 +207,18 @@ for filename in files:
 print('got allele frequencies')            
 
 # create lists with frequencies for each geneotype
-AA = [freq for freq in mutations[participant] if Genotypes[participant] == 'AA']
-AG = [freq for freq in mutations[participant] if Genotypes[participant] == 'AG']
-GG = [freq for freq in mutations[participant] if Genotypes[participant] == 'GG']        
-        
+AA, AG, GG = [], [], []
+for participant in mutations:
+    if Genotypes[participant] == 'AA':
+        for freq in mutations[participant]:
+            AA.append(freq)
+    elif Genotypes[participant] == 'AG':
+        for freq in mutations[participant]:
+            AG.append(freq)
+    elif Genotypes[participant] == 'GG':
+        for freq in mutations[participant]:
+            GG.append(freq)
+      
 # count the number of participants
 total_participants = 0
 # loop over individual IDs in frequency dict
