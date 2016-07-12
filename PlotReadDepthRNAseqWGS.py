@@ -227,6 +227,9 @@ xtickpos = [0.15, 0.95, 1.75, 2.55, 3.35, 4.15, 4.95, 5.75, 6.55]
 # add x labels
 plt.xticks(xtickpos, TumorNames, fontsize = 10, **FigFont)
 
+# add a range for the Y axis
+plt.ylim([0, 9000])
+
 # do not show lines around figure  
 ax.spines["top"].set_visible(False)    
 ax.spines["bottom"].set_visible(True)    
@@ -298,7 +301,7 @@ plt.margins(0.05)
 # create legend
 WGS = mpatches.Patch(facecolor = '#1f78b4' , edgecolor = 'black', linewidth = 1, label= 'WGS')
 RNASeq = mpatches.Patch(facecolor = '#b2df8a', edgecolor = 'black', linewidth = 1, label = 'RNASeq')
-plt.legend(handles=[WGS, RNASeq], loc = 2, fontsize = 8, frameon = False, **FigFont)
+plt.legend(handles=[WGS, RNASeq], loc = (0, 2.5), fontsize = 8, frameon = False, ncol = 2)
 
 # save figure
 fig.savefig('testfile.pdf', bbox_inches = 'tight')
