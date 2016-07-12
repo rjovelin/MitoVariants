@@ -274,38 +274,19 @@ for label in ax.get_yticklabels():
     label.set_fontname('Helvetica')
     
 
-# add jittered data points to box plots (when data points are not too numerous)
-#if DataType == 'PerIndividual':
-#    i = 0
-#    for j in range(len(all_data)):
-#        k = np.random.uniform(-0.1, 0.1, len(all_data[j])) + (i+1)
-#        if (i+1) % 2 == 0:
-#            plt.plot(k, all_data[j], 'o', markersize = 2, markeredgecolor = '#1f78b4',
-#                     markeredgewidth = 1.5, markerfacecolor = '#1f78b4', alpha = 0.4)
-#        else:
-#            plt.plot(k, all_data[j], 'o', markersize = 2, markeredgecolor = '#b2df8a',
-#                     markeredgewidth = 1.5, markerfacecolor = '#b2df8a', alpha = 0.4)
-#        i += 1
-
-
-PointPositions = [0, 0.3, 0.8, 1.1, 1.6, 1.9, 2.4, 2.7, 3.2, 3.5, 4, 4.3, 4.8, 5.1, 5.6, 5.9, 6.4, 6.7]
-
+# add jittered points
 if DataType == 'PerIndividual':
+    PointPositions = [0, 0.3, 0.8, 1.1, 1.6, 1.9, 2.4, 2.7, 3.2, 3.5, 4, 4.3, 4.8, 5.1, 5.6, 5.9, 6.4, 6.7]    
     i = 0
     for j in range(len(all_data)):
         k = np.random.uniform(-0.1, 0.1, len(all_data[j])) + PointPositions[i]
         if i % 2 == 0:
             plt.plot(k, all_data[j], 'o', markersize = 2, markeredgecolor = '#1f78b4',
-                     markeredgewidth = 1.5, markerfacecolor = '#1f78b4', alpha = 0.4)
+                     markeredgewidth = 1.5, markerfacecolor = '#1f78b4', alpha = 0.7)
         else:
             plt.plot(k, all_data[j], 'o', markersize = 2, markeredgecolor = '#b2df8a',
-                     markeredgewidth = 1.5, markerfacecolor = '#b2df8a', alpha = 0.4)
+                     markeredgewidth = 1.5, markerfacecolor = '#b2df8a', alpha = 0.7)
         i += 1
-
-
-
-
-
 
 # add title
 if DataType == 'PerIndividual' and StatsComp == 'median':
