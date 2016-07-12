@@ -81,6 +81,9 @@ for filename in MatchFiles:
     infile.close()
 print('matched Bams with Individual IDs', len(MatchingIDs))
 
+# create a list with ID without a match
+NoMatch = []
+
 # loop over folders, extract MRPP3 genotypes of all individuals
 for folder in VCFTumor:
     print(folder)
@@ -92,7 +95,10 @@ for folder in VCFTumor:
     for ID in mrpp3:
         if ID in MatchingIDs:
             Genotypes[MatchingIDs[ID]] = mrpp3[ID]
+        else:
+            NoMatch.append(ID)
 print('extracted MRPP3 genotype', len(Genotypes))                
+print('ID with no match', len(NoMatch))
 
 # get the heteroplasmy frequency for trna, p9 or all genes 
 
