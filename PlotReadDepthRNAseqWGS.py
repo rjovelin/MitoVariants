@@ -176,21 +176,22 @@ for name in TumorNames:
     all_data.append(Coverage[name][1])
 
 # create figure
-fig = plt.figure(1, figsize = (11, 5))
+fig = plt.figure(1, figsize = (11, 3))
 
 # add a plot to figure (1 row, 1 column, 1 plot)
 ax = fig.add_subplot(1, 1, 1)    
 
 # use a boxplot
-bp = ax.boxplot(all_data, showmeans = True, showfliers = False, widths = 0.5, positions = [0, 0.5,
-                                                                                           1.2, 1.7,
-                                                                                           2.4, 2.9,
-                                                                                           3.6, 4.1,
-                                                                                           4.8, 5.3,
-                                                                                           6, 6.5,
-                                                                                           7.2, 7.7,
-                                                                                           8.4, 8.9,
-                                                                                           9.6, 10.1], patch_artist = True) 
+bp = ax.boxplot(all_data, showmeans = True, showfliers = False, widths = 0.3,
+                positions = [0, 0.3,
+                             0.8, 1.1,
+                             1.6, 1.9,
+                             2.4, 2.7,
+                             3.2, 3.5,
+                             4, 4.3,
+                             4.8, 5.1,
+                             5.6, 5.9,
+                             6.4, 6.7], patch_artist = True) 
     
 # color WGS boxes in grey
 i = 0    
@@ -229,7 +230,8 @@ ytext = ax.set_ylabel('Read depth', color = 'black', size = 10, ha = 'center', f
 xtext = ax.set_xlabel('Tumor types', color = 'black', size = 10, ha = 'center', fontname = 'Arial', family = 'sans-serif')
 
 # create a list of tick positions
-xtickpos = [0.5, 1.7, 2.9, 4.1, 5.3, 6.5, 7.7, 8.9, 10.1]
+xtickpos = [0.15, 0.95, 1.75, 2.55, 3.35, 4.15, 4.95, 5.75, 6.55] 
+
 
 ## add labels to x-ticks, rotate and align right, set size to 14
 #ax.set_xticklabels(names, rotation = 30, ha = 'right', size = 10, fontname = 'Arial', family = 'sans-serif')
@@ -334,7 +336,14 @@ if DataType == 'PerIndividual':
 
 
 # add title
-plt.title('Read depth between WGS and RNAseq\n', size = 10, fontname = 'Arial')  
+if DataType == 'PerIndividual' and StatsComp == 'median':
+    plt.title('Median read depth per individual for WGS and RNAseq\n', size = 10, fontname = 'Arial')  
+elif DataType == 'PerIndividual' and StatsComp == 'mean':
+    plt.title('Mean read depth per individual for WGS and RNAseq\n', size = 10, fontname = 'Arial')
+elif DataType == 'PerPosition':
+    plt.title('Read depth per position for WGS and RNAseq\n', size = 10, fontname = 'Arial')
+  
+  
   
 # save figure
 fig.savefig('testfile.pdf', bbox_inches = 'tight')
