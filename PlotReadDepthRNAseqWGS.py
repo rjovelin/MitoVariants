@@ -301,8 +301,15 @@ plt.margins(0.05)
 # create legend
 WGS = mpatches.Patch(facecolor = '#1f78b4' , edgecolor = 'black', linewidth = 1, label= 'WGS')
 RNASeq = mpatches.Patch(facecolor = '#b2df8a', edgecolor = 'black', linewidth = 1, label = 'RNASeq')
-plt.legend(handles=[WGS, RNASeq], loc = (0, 2.5), fontsize = 8, frameon = False, ncol = 2)
+plt.legend(handles=[WGS, RNASeq], loc = (0, 1), fontsize = 8, frameon = False, ncol = 2)
 
+# save outputfile
+if DataType == 'PerIndividual' and StatsComp == 'median':
+    outputfile = 'MedianReadDepthPerIndivWGSRNAseq.pdf'  
+elif DataType == 'PerIndividual' and StatsComp == 'mean':
+    outputfile = 'MeanReadDepthPerIndivWGSRNAseq.pdf'
+elif DataType == 'PerPosition':
+    outputfile = 'ReadDepthPerPositionWGSRNAseq.pdf'
 # save figure
-fig.savefig('testfile.pdf', bbox_inches = 'tight')
+fig.savefig(outputfile, bbox_inches = 'tight')
     
