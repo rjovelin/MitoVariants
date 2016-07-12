@@ -110,21 +110,22 @@ for gene in mito_genes:
     if gene.startswith('TRN'):
         for i in mito_genes[gene]:
             trna_indices.append(i)
-print('got tRNA indices')
+print('got tRNA indices', len(trna_indices))
 
 # get the gene coordinates [start, end, orientation]
 mito_coords = MitoCoordinates('rCRS_genes_MT.text.txt')
-print('got gene coordinates')
+print('got gene coordinates', len(mito_coords))
 
 
 # make a list of summary files 
 SummaryFiles = [i for i in os.listdir() if 'tumor_RNAOnly' in i and '.txt' in i]
+print('summary files', len(SummaryFiles))
 
 # create a dict {mutation: [list of allele frequencies]}
 mutations = {}
 
 # loop over filename in files
-for filename in files:
+for filename in SummaryFiles:
     # open file for reading
     infile = open(filename)
     infile.readline()
