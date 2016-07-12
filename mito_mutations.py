@@ -1306,9 +1306,9 @@ def GetMRPP3Genotypes(VCF_Folder):
                 # consider positions that pass quality filtering
                 if line[6] == 'PASS':
                     # record genotype, parse format string
-                    line[8] = line[8].split(':')
+                    line[9] = line[9].split(':')
                     # grab genotype, parse genotype code to get heterozygosity
-                    genotype = line[8][0]
+                    genotype = line[9][0]
                     if '/' in genotype:
                         genotype = genotype.split('/')
                     elif '|' in genotype:
