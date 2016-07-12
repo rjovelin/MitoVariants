@@ -223,18 +223,8 @@ xtext = ax.set_xlabel('Tumor types', color = 'black', size = 10, ha = 'center', 
 
 # create a list of tick positions
 xtickpos = [0.15, 0.95, 1.75, 2.55, 3.35, 4.15, 4.95, 5.75, 6.55] 
-
-
-## add labels to x-ticks, rotate and align right, set size to 14
-#ax.set_xticklabels(names, rotation = 30, ha = 'right', size = 10, fontname = 'Arial', family = 'sans-serif')
-
+# add x labels
 plt.xticks(xtickpos, TumorNames, fontsize = 10, fontname = 'Arial')
-
-
-# add a light grey horizontal grid to the plot, semi-transparent, 
-ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)  
-# hide these grids behind plot objects
-ax.set_axisbelow(True)
 
 # do not show lines around figure  
 ax.spines["top"].set_visible(False)    
@@ -245,6 +235,10 @@ ax.spines["left"].set_visible(False)
 for spine in ax.spines.values():
   spine.set_position(('outward', 5))
 
+# add a light grey horizontal grid to the plot, semi-transparent, 
+ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)  
+# hide these grids behind plot objects
+ax.set_axisbelow(True)
 
 # do not show ticks
 plt.tick_params(
@@ -288,44 +282,6 @@ if DataType == 'PerIndividual':
             plt.plot(k, all_data[j], 'o', markersize = 2, markeredgecolor = '#b2df8a',
                      markeredgewidth = 1.5, markerfacecolor = '#b2df8a', alpha = 0.4)
         i += 1
-
-
-## annotate figure to add significance
-## get the x and y coordinates
-#yvalues = []
-#for i in range(len(all_data)):
-#    yvalues.extend(all_data[i])
-## get max and min y values
-#y_min, y_max = min(yvalues), max(yvalues)
-#
-## compare read depth between WGS and RNAseq for each cancer
-#for i in range(0, len(all_data), 2):
-#    # get the P value of Wilcoxon rank sum test
-#    Pval = stats.ranksums(all_data[i], all_data[i+1])[1]
-#    print(i, i+1, Pval)
-#    # get stars for significance
-#    if Pval > 0.05:
-#        P = 'N.S.'
-#    elif Pval < 0.05 and Pval > 0.01:
-#        P = '*'
-#    elif Pval < 0.01 and Pval > 0.001:
-#        P = '**'
-#    elif Pval < 0.001:
-#        P = '***'
-#    
-#    # add bracket
-#    ax.annotate("", xy=(i+1, y_max + 200), xycoords='data', xytext=(i+2, y_max + 200),
-#                textcoords='data', arrowprops=dict(arrowstyle="-", ec='#aaaaaa',
-#                connectionstyle="bar,fraction=0.2", linewidth = 0.75))
-#    # add stars for significance
-#    if P == 'N.S.':
-#        ax.text(i + 1.5, y_max + abs(y_max - y_min)*0.08, P, horizontalalignment='center',
-#                verticalalignment='center', color = 'grey', fontname = 'Arial', size = 6)
-#    else:
-#        ax.text(i + 1.5, y_max + abs(y_max - y_min)*0.05, P, horizontalalignment='center',
-#                verticalalignment='center', color = 'grey', fontname = 'Arial')
-
-
 
 # add title
 if DataType == 'PerIndividual' and StatsComp == 'median':
