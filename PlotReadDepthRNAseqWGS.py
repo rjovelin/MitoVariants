@@ -176,22 +176,14 @@ for name in TumorNames:
     all_data.append(Coverage[name][1])
 
 # create figure
-fig = plt.figure(1, figsize = (11, 3))
+fig = plt.figure(1, figsize = (7.3, 3))
 
 # add a plot to figure (1 row, 1 column, 1 plot)
 ax = fig.add_subplot(1, 1, 1)    
 
 # use a boxplot
 bp = ax.boxplot(all_data, showmeans = True, showfliers = False, widths = 0.3,
-                positions = [0, 0.3,
-                             0.8, 1.1,
-                             1.6, 1.9,
-                             2.4, 2.7,
-                             3.2, 3.5,
-                             4, 4.3,
-                             4.8, 5.1,
-                             5.6, 5.9,
-                             6.4, 6.7], patch_artist = True) 
+                positions = [0, 0.3, 0.8, 1.1, 1.6, 1.9, 2.4, 2.7, 3.2, 3.5, 4, 4.3, 4.8, 5.1, 5.6, 5.9, 6.4, 6.7], patch_artist = True) 
     
 # color WGS boxes in grey
 i = 0    
