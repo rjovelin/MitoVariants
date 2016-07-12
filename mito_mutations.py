@@ -1286,7 +1286,8 @@ def GetMRPP3Genotypes(VCF_Folder):
     Genotypes = {}
     
     # make a list of VCF files 
-    files = [i for i in os.listdir(VCF_Folder) if i[-4:] == '.vcf']    
+    files = [i for i in os.listdir(VCF_Folder) if i[-4:] == '.vcf' and 'germline' in i] 
+    print('{0} VCF files for {1}'.format(len(files), VCF_Folder))
     # loop over files
     for filename in files:
         print(filename)
