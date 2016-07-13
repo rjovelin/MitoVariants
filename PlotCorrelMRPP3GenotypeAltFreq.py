@@ -192,23 +192,25 @@ for filename in SummaryFiles:
                     else:
                         mutations[participant]  [freq]
             elif SiteType == 'P9':
-                assert position in trna_indices, 'position should be a trna index'
-                # record tRNA P9 sites
-                # find the tRNA corresponding to current site
-                for i in mito_genes:
-                    if position in mito_genes[i]:
-                        # stop looking, found tRNA gene
-                        break
-                assert i == gene, 'gene name does not match woth expected position'
-                # convert genomic position to tRNA position
-                assert position in range(mito_coords[gene][0], mito_coords[gene][1]), 'position should be in gene'
-                trnaposition = GenomicPositionToGenePosition(position, mito_coords[gene][0], mito_coords[gene][1], mito_coords[gene][2])
-                # record only P9 posiitons (8 in 0-based index)
-                if trnaposition == 8:
-                    if participant in mutations:
-                        mutations[participant].append(freq)
-                    else:
-                        mutations[participant] = [freq]
+                # record tRNA site
+                if line[2].startswith('TRN'):
+                    assert position in trna_indices, 'position should be a trna index'
+                    # record tRNA P9 sites
+                    # find the tRNA corresponding to current site
+                    for i in mito_genes:
+                        if position in mito_genes[i]:
+                            # stop looking, found tRNA gene
+                            break
+                    assert i == gene, 'gene name does not match woth expected position'
+                    # convert genomic position to tRNA position
+                    assert position in range(mito_coords[gene][0], mito_coords[gene][1]), 'position should be in gene'
+                    trnaposition = GenomicPositionToGenePosition(position, mito_coords[gene][0], mito_coords[gene][1], mito_coords[gene][2])
+                    # record only P9 posiitons (8 in 0-based index)
+                    if trnaposition == 8:
+                        if participant in mutations:
+                            mutations[participant].append(freq)
+                        else:
+                            mutations[participant] = [freq]
                  
     infile.close()
 print('got allele frequencies')            
