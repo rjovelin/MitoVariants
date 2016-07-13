@@ -246,17 +246,31 @@ print('GG', len(GG))
 
 
 # create a figure
-fig = plt.figure(1, figsize = (3.5, 2.5))
+fig = plt.figure(1, figsize = (3, 2.5))
 # add a plot to figure (1 row, 1 column, 1 plot)
 ax = fig.add_subplot(1, 1, 1)
 
 # make a list with all data
 Data = [AA, AG, GG] 
 
+# set font for all text in figure
+FigFont = {'fontname':'Helvetica'}
+
+# set y axis label
+ax.set_ylabel('Alternative Allele Frequency', size = 10, ha = 'center', **FigFont)
+
+# create a list of tick positions
+xtickpos = [0, 0.5, 1] 
+# add x labels
+plt.xticks(xtickpos, ['A/A', 'A/G', 'G/G'], ha = 'center', size = 10, **FigFont)
+
+# set x axis label
+ax.set_xlabel('rs11156878', size = 10, ha = 'center', **FigFont)
+
 # plot jittered data points 
 i = 0
 for j in range(len(Data)):
-    k = np.random.uniform(-0.2, 0.2, len(Data[j])) + (i+1)
+    k = np.random.uniform(-0.2, 0.2, len(Data[j])) + xtickpos[i]
     plt.plot(k, Data[j], 'o', markersize = 2, markeredgecolor = 'black', markeredgewidth = 1.5, markerfacecolor = 'black', alpha = 0.5)
     i += 1
 
@@ -264,17 +278,6 @@ for j in range(len(Data)):
 ax.set_ylim([0, 1])
 ax.set_xlim([0,4])
   
-# set font for all text in figure
-FigFont = {'fontname':'Helvetica'}
-
-# set y axis label
-ax.set_ylabel('Alternative Allele Frequency', size = 10, ha = 'center', **FigFont)
-
-# add labels to x-ticks, rotate and align right, set size to 14
-ax.set_xticklabels(['A/A', 'A/G', 'G/G'], ha = 'center', size = 10, **FigFont)
-
-# set x axis label
-ax.set_xlabel('rs11156878', size = 10, ha = 'center', **FigFont)
 
 # do not show lines around figure  
 ax.spines["top"].set_visible(False)    
