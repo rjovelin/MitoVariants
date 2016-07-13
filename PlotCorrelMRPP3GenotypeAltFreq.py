@@ -34,10 +34,6 @@ threshold = 1
 # get site type from command
 SiteType = sys.argv[1]
 
-
-# create a dict {individual: genotype}
-Genotypes = {}
-
 # make a list of tumor types with VCF files
 VCFTumor = ['COAD', 'OV', 'RECA-EU', 'UCEC', 'CESC', 'LGG', 'LIRI', 'SARC', 'STAD']
 
@@ -83,7 +79,8 @@ print('matched Bams with Individual IDs', len(MatchingIDs))
 
 # create a list with ID without a match
 NoMatch = []
-
+# create a dict {individual: genotype}
+Genotypes = {}
 # loop over folders, extract MRPP3 genotypes of all individuals
 for folder in VCFTumor:
     print(folder)
@@ -190,7 +187,7 @@ for filename in SummaryFiles:
                     if participant in mutations:
                         mutations[participant].append(freq)
                     else:
-                        mutations[participant]  [freq]
+                        mutations[participant] = [freq]
             elif SiteType == 'P9':
                 # record tRNA site
                 if line[2].startswith('TRN'):
@@ -215,18 +212,24 @@ for filename in SummaryFiles:
     infile.close()
 print('got allele frequencies')            
 
+# create a list of participants with RNA modifs but no MRPP3 genotype
+missing = []
 # create lists with frequencies for each geneotype
 AA, AG, GG = [], [], []
 for participant in mutations:
-    if Genotypes[participant] == 'AA':
-        for freq in mutations[participant]:
-            AA.append(freq)
-    elif Genotypes[participant] == 'AG':
-        for freq in mutations[participant]:
-            AG.append(freq)
-    elif Genotypes[participant] == 'GG':
-        for freq in mutations[participant]:
-            GG.append(freq)
+    if participant in Genotypes:
+        if Genotypes[participant] == 'AA':
+            for freq in mutations[participant]:
+                AA.append(freq)
+        elif Genotypes[participant] == 'AG':
+            for freq in mutations[participant]:
+                AG.append(freq)
+        elif Genotypes[participant] == 'GG':
+            for freq in mutations[participant]:
+                GG.append(freq)
+    else:
+        missing.append(participant)
+print('participants with RNA modifs but no MRPP3 genotype', len(missing))
       
 # count the number of participants
 total_participants = 0
