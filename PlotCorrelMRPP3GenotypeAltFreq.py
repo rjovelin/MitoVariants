@@ -260,7 +260,7 @@ FigFont = {'fontname':'Helvetica'}
 ax.set_ylabel('Alternative Allele Frequency', size = 10, ha = 'center', **FigFont)
 
 # create a list of tick positions
-xtickpos = [0, 0.5, 1] 
+xtickpos = [0.75, 1.5, 2.25] 
 # add x labels
 plt.xticks(xtickpos, ['A/A', 'A/G', 'G/G'], ha = 'center', size = 10, **FigFont)
 
