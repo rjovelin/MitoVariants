@@ -8,7 +8,7 @@ Created on Tue Jul  5 11:54:09 2016
 # use this script to plot correlation between genotype at MRPP3 and RNA heteroplasmy frequency
 
 # usage PlotCorrelMRPP3GenotypeAltFreq [options]
-# -[trna/P9/allgenes]: consider only RNA modifications in tRNA, modifs in tRNA P9 or all genes
+# -[trna/P9/allgenes/1610/5520/8303/9999/10413/12146/12274/14734]: consider only RNA modifications in tRNA, modifs in tRNA P9 or all genes, or other snps with given position
 
 # place this script in folder HeteroPlasmyFilesRNAOnly with summary files
 
@@ -33,6 +33,12 @@ threshold = 1
 
 # get site type from command
 SiteType = sys.argv[1]
+# if SiteType is a SNP position, convert to 0-based coordinate
+try:
+    SiteType = int(SiteType) -1
+except:
+    SiteType = str(SiteType)
+print(SiteType)
 
 # make a list of tumor types with VCF files
 VCFTumor = ['COAD', 'OV', 'RECA-EU', 'UCEC', 'CESC', 'LGG', 'LIRI', 'SARC', 'STAD']
