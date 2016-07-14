@@ -214,7 +214,14 @@ for filename in SummaryFiles:
                             mutations[participant].append(freq)
                         else:
                             mutations[participant] = [freq]
-                 
+            else:
+                # record SNPs if position is SiteType
+                if position == SiteType:
+                    if participant in mutations:
+                        mutations[participant].append(freq)
+                    else:
+                        mutations[participant] = [freq]
+                    
     infile.close()
 print('got allele frequencies')            
 
